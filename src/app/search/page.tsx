@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -8,7 +8,23 @@ import dynamic from "next/dynamic";
 // Import komponen LocationSearch dengan CSR
 const LocationSearch = dynamic(() => import("../components/LocationSearch"), { ssr: false });
 
-export default function SearchPage() {
+// Loading component for suspense fallback
+function SearchLoading() {
+  return (
+    <div className="h-[500px] bg-white/5 backdrop-blur-md flex items-center justify-center rounded-xl border border-white/20 shadow-xl">
+      <div className="text-center">
+        <div className="relative w-16 sm:w-20 h-16 sm:h-20 mx-auto mb-4">
+          <div className="absolute top-0 left-0 w-full h-full border-4 border-white/20 rounded-full animate-ping"></div>
+          <div className="absolute top-0 left-0 w-full h-full border-4 border-t-red-600 rounded-full animate-spin"></div>
+        </div>
+        <p className="text-base sm:text-xl text-red-600">Memuat pencarian lokasi...</p>
+      </div>
+    </div>
+  );
+}
+
+// Component that uses useSearchParams()
+function SearchContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q");
   const [isLoading, setIsLoading] = useState(true);
@@ -76,4 +92,13 @@ export default function SearchPage() {
       </main>
     </>
   );
-} 
+}
+
+// Main page component with suspense boundary
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchLoading />}>
+      <SearchContent />
+    </Suspense>
+  );
+}
