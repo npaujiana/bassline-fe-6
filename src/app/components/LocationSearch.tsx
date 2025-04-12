@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -42,10 +42,10 @@ interface PlaceResult {
 const defaultCenter: [number, number] = [40.7128, -74.006];
 
 // Style for map container - 60% height and full width
-const containerStyle = {
-  width: "100%",
-  height: "60vh",
-};
+// const containerStyle = {
+//   width: "100%",
+//   height: "60vh",
+// };
 
 // Filter categories data
 const categories = [
