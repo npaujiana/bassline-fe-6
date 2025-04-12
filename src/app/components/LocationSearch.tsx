@@ -246,8 +246,10 @@ export default function LocationSearch({
       if (data && data.length > 0) {
         setSearchResults(data);
 
-        // Auto select first result from search
-        handleSelectPlace(data[0]);
+        // Auto select first result from search if it exists
+        if (data[0]) {
+          handleSelectPlace(data[0]);
+        }
       }
     } catch (error) {
       console.error("Error searching places:", error);
