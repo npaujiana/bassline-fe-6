@@ -54,7 +54,9 @@ export default function MapPage() {
                 </div>
               </div>
             ) : (
-              // <MapView searchQuery={decodedQuery} />
+              <div>
+                {/* <MapView searchQuery={decodedQuery} /> */}
+              </div>
             )}
           </div>
           
