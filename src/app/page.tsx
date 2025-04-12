@@ -69,7 +69,7 @@ export default function Home() {
 
   // Handle klik pada hasil pencarian
   const handleSelectPlace = (place: PlaceResult) => {
-    setSearchQuery(place.display_name.split(",")[0] || "");
+    setSearchQuery(place.display_name.split(",")[0] ?? "");
     setShowDropdown(false);
     router.push(`/search?q=${encodeURIComponent(place.display_name)}`);
   };

@@ -234,30 +234,8 @@ export default function LocationSearch({
     }
   }, []);
 
-  // Search places with Nominatim API (OpenStreetMap)
-  const searchPlaces = async (query: string) => {
-    try {
-      // Updated to search in the United States
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=us`,
-      );
-      const data = (await response.json()) as PlaceResult[];
-
-      if (data && data.length > 0) {
-        setSearchResults(data);
-
-        // Auto select first result from search if it exists
-        if (data[0]) {
-          handleSelectPlace(data[0]);
-        }
-      }
-    } catch (error) {
-      console.error("Error searching places:", error);
-    }
-  };
-
   // Handle place selection from dropdown
-  const handleSelectPlace = (place: PlaceResult) => {
+  const handleSelectPlace = useCallback((place: PlaceResult) => {
     // Set location
     const lat = parseFloat(place.lat);
     const lon = parseFloat(place.lon);
@@ -279,7 +257,29 @@ export default function LocationSearch({
     setLocationPhotos([
       "https://via.placeholder.com/400x300?text=No+Image+Available",
     ]);
-  };
+  }, []);
+
+  // Search places with Nominatim API (OpenStreetMap)
+  const searchPlaces = useCallback(async (query: string) => {
+    try {
+      // Updated to search in the United States
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=us`,
+      );
+      const data = (await response.json()) as PlaceResult[];
+
+      if (data && data.length > 0) {
+        setSearchResults(data);
+
+        // Auto select first result from search if it exists
+        if (data[0]) {
+          handleSelectPlace(data[0]);
+        }
+      }
+    } catch (error) {
+      console.error("Error searching places:", error);
+    }
+  }, [handleSelectPlace]);
 
   // Handle POI marker click
   const handlePoiClick = (poi: (typeof barData)[0]) => {
@@ -329,7 +329,7 @@ export default function LocationSearch({
     if (initialQuery && initialQuery.length > 2) {
       void searchPlaces(initialQuery);
     }
-  }, [initialQuery]);
+  }, [initialQuery, searchPlaces]);
 
   return (
     <div className="relative">
