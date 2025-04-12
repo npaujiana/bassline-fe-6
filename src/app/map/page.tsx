@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -9,7 +9,7 @@ import dynamic from "next/dynamic";
 // Importar MapView de forma dinámica con SSR desactivado
 // const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
 
-export default function MapPage() {
+function MapContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q");
   const [isLoading, setIsLoading] = useState(true);
@@ -71,5 +71,28 @@ export default function MapPage() {
         </div>
       </main>
     </>
+  );
+}
+
+// Loading fallback for Suspense
+function MapLoading() {
+  return (
+    <div className="h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] bg-white/5 backdrop-blur-md flex items-center justify-center rounded-xl border border-white/20 shadow-xl">
+      <div className="text-center">
+        <div className="relative w-16 sm:w-20 h-16 sm:h-20 mx-auto mb-4">
+          <div className="absolute top-0 left-0 w-full h-full border-4 border-white/20 rounded-full animate-ping"></div>
+          <div className="absolute top-0 left-0 w-full h-full border-4 border-t-red-600 rounded-full animate-spin"></div>
+        </div>
+        <p className="text-base sm:text-xl text-red-600">Loading map page...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function MapPage() {
+  return (
+    <Suspense fallback={<MapLoading />}>
+      <MapContent />
+    </Suspense>
   );
 }
