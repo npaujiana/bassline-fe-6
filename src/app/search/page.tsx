@@ -27,6 +27,7 @@ function SearchLoading() {
 function SearchContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q");
+  const showMap = searchParams.get("showMap") === "true";
   const [isLoading, setIsLoading] = useState(true);
 
   // Decode the search query
@@ -41,7 +42,8 @@ function SearchContent() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (!query) {
+  // Show map even when query is empty if showMap parameter is true
+  if (!query && !showMap) {
     return (
       <>
         <div className="min-h-screen flex flex-col items-center justify-center relative bg-white">
