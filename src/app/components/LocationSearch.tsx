@@ -574,7 +574,7 @@ export default function LocationSearch({
   return (
     <div className="relative">
       {/* Search bar */}
-      <div className="absolute top-4 right-0 left-0 z-[999] mx-auto w-[90%] max-w-md">
+      <div className="absolute top-4 right-0 left-0 z-[999] mx-auto w-max">
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
             type="text"
