@@ -364,7 +364,7 @@ export default function LocationSearch({
   
   // Function to handle selection from autocomplete
   const handleAutocompleteSelect = (place: PlaceResult) => {
-    setSearchQuery(place.display_name.split(',')[0]);
+    setSearchQuery(place.display_name?.split(',')[0] ?? '');
     handleSelectPlace(place);
     setShowAutocomplete(false);
   };
