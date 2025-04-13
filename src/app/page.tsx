@@ -74,6 +74,10 @@ export default function Home() {
     router.push(`/search?q=${encodeURIComponent(place.display_name)}`);
   };
 
+  const handleMapClick = () => {
+    router.push('/search?q=map');
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -197,6 +201,9 @@ export default function Home() {
                 }
               </div>
             </div>
+            <p className="mt-4 text-sm sm:text-base text-red-500 font-medium">
+              OR GO STRAIGHT TO OUR <span onClick={handleMapClick} className="underline cursor-pointer">MAP</span>
+            </p>
           </div>
         </div>
       </div>
