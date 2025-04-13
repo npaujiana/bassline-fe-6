@@ -11,7 +11,71 @@ interface PlaceResult {
   lat: string;
   lon: string;
   display_name: string;
+  category?: string;
+  rating?: number;
+  open_hours?: string;
+  image_url?: string;
+  description?: string;
 }
+
+// Popular Indonesian destinations data
+const popularPlaces: PlaceResult[] = [
+  {
+    place_id: "monas1",
+    lat: "-6.1754",
+    lon: "106.8272",
+    display_name: "Monumen Nasional, Jakarta, Indonesia",
+    category: "Monument",
+    rating: 4.6,
+    open_hours: "08:00 - 17:00",
+    image_url: "/images/monas.jpg",
+    description: "132m tall tower symbolizing Indonesia's struggle for independence"
+  },
+  {
+    place_id: "kuta1",
+    lat: "-8.7179",
+    lon: "115.1707",
+    display_name: "Pantai Kuta, Bali, Indonesia",
+    category: "Beach",
+    rating: 4.5,
+    open_hours: "24 hours",
+    image_url: "/images/kuta.jpg",
+    description: "Popular sandy beach with surfing, sunsets and vibrant nightlife"
+  },
+  {
+    place_id: "malioboro1",
+    lat: "-7.7956",
+    lon: "110.3695",
+    display_name: "Jalan Malioboro, Yogyakarta, Indonesia",
+    category: "Shopping",
+    rating: 4.4,
+    open_hours: "09:00 - 21:00",
+    image_url: "/images/malioboro.jpg",
+    description: "Iconic shopping street with traditional goods and street food"
+  },
+  {
+    place_id: "borobudur1",
+    lat: "-7.6079",
+    lon: "110.2038",
+    display_name: "Candi Borobudur, Magelang, Jawa Tengah, Indonesia",
+    category: "Temple",
+    rating: 4.8,
+    open_hours: "06:00 - 17:00",
+    image_url: "/images/borobudur.jpg",
+    description: "9th-century Mahayana Buddhist temple and UNESCO World Heritage Site"
+  },
+  {
+    place_id: "bromo1",
+    lat: "-7.9425",
+    lon: "112.9530",
+    display_name: "Gunung Bromo, Jawa Timur, Indonesia",
+    category: "Mountain",
+    rating: 4.7,
+    open_hours: "Sunrise hours best for visiting",
+    image_url: "/images/bromo.jpg",
+    description: "Active volcano in East Java with spectacular sunrise views"
+  }
+];
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,16 +107,38 @@ export default function Home() {
     }
   };
 
-  // Search places dengan Nominatim API (OpenStreetMap)
+  // Search places dengan kombinasi dummy data dan Nominatim API
   const searchPlaces = async (query: string) => {
     try {
+      // Check if query matches any popular places first
+      const lowerQuery = query.toLowerCase();
+      const matchingPopularPlaces = popularPlaces.filter(place => 
+        place.display_name.toLowerCase().includes(lowerQuery)
+      );
+      
+      if (matchingPopularPlaces.length > 0) {
+        setSearchResults(matchingPopularPlaces);
+        setShowDropdown(true);
+        setIsSearching(false);
+        return;
+      }
+      
+      // If no matches in dummy data, use API
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=id`,
       );
       const data = (await response.json()) as PlaceResult[];
 
       if (data && data.length > 0) {
-        setSearchResults(data);
+        // Enhance API results with some additional info
+        const enhancedData = data.map(place => ({
+          ...place,
+          category: "Location",
+          rating: 4.0,
+          open_hours: "Varies",
+          description: `Location in ${place.display_name.split(',').slice(-2)[0] || 'Indonesia'}`
+        }));
+        setSearchResults(enhancedData);
         setShowDropdown(true);
       } else {
         setSearchResults([]);
@@ -71,7 +157,15 @@ export default function Home() {
   const handleSelectPlace = (place: PlaceResult) => {
     setSearchQuery(place.display_name.split(",")[0] ?? "");
     setShowDropdown(false);
-    router.push(`/search?q=${encodeURIComponent(place.display_name)}`);
+    // Pass more complete information via URL params
+    const locationData = {
+      name: place.display_name,
+      lat: place.lat,
+      lon: place.lon,
+      category: place.category,
+      rating: place.rating
+    };
+    router.push(`/search?q=${encodeURIComponent(place.display_name)}&data=${encodeURIComponent(JSON.stringify(locationData))}`);
   };
 
   const handleMapClick = () => {
@@ -189,6 +283,21 @@ export default function Home() {
                         <p className="mt-1 text-sm text-gray-500">
                           {place.display_name}
                         </p>
+                        {place.category && (
+                          <div className="flex items-center mt-1">
+                            <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
+                              {place.category}
+                            </span>
+                            {place.rating && (
+                              <span className="ml-2 text-xs flex items-center text-amber-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                {place.rating}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

@@ -190,6 +190,7 @@ export default function LocationSearch({
   const [showDetails, setShowDetails] = useState(false);
   const [mapZoom, setMapZoom] = useState(12);
   const [showBottomCard, setShowBottomCard] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // State for category filter
   const [selectedCategory, setSelectedCategory] = useState("venue");
@@ -253,33 +254,120 @@ export default function LocationSearch({
     // Show bottom card
     setShowBottomCard(true);
 
-    // Set default photo if none available
-    setLocationPhotos([
-      "https://via.placeholder.com/400x300?text=No+Image+Available",
-    ]);
+    // Temukan gambar dari barData
+    const bar = barData.find(b => b.id.toString() === place.place_id);
+    if (bar?.image) {
+      setLocationPhotos([bar.image]);
+    } else {
+      // Set default photo if none available
+      setLocationPhotos([
+        "https://via.placeholder.com/400x300?text=No+Image+Available",
+      ]);
+    }
   }, []);
 
   // Search places with Nominatim API (OpenStreetMap)
   const searchPlaces = useCallback(async (query: string) => {
+    if (!query || query.trim() === '') return;
+    
     try {
-      // Updated to search in the United States
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=us`,
-      );
-      const data = (await response.json()) as PlaceResult[];
-
-      if (data && data.length > 0) {
-        setSearchResults(data);
-
+      // Cari di data lokal (barData) daripada menggunakan API
+      const lowerQuery = query.toLowerCase();
+      
+      // Filter barData berdasarkan nama atau alamat yang cocok dengan query
+      const matchedBars = barData.filter(bar => 
+        bar.name.toLowerCase().includes(lowerQuery) || 
+        bar.address.toLowerCase().includes(lowerQuery) ||
+        bar.genre.toLowerCase().includes(lowerQuery)
+      ).slice(0, 5);
+      
+      if (matchedBars.length > 0) {
+        // Ubah format barData ke format PlaceResult
+        const results: PlaceResult[] = matchedBars.map(bar => ({
+          place_id: bar.id.toString(),
+          lat: bar.lat.toString(),
+          lon: bar.lon.toString(),
+          display_name: `${bar.name}, ${bar.address}`,
+          type: bar.type,
+          category: bar.genre,
+          address: {
+            road: bar.address,
+            phone: bar.phone,
+            name: bar.name,
+            genre: bar.genre,
+          }
+        }));
+        
+        setSearchResults(results);
+        
         // Auto select first result from search if it exists
-        if (data[0]) {
-          handleSelectPlace(data[0]);
+        if (results[0]) {
+          handleSelectPlace(results[0]);
         }
+      } else {
+        // Jika tidak ada hasil
+        setSearchResults([]);
+        console.log("Tidak ada hasil pencarian untuk:", query);
       }
     } catch (error) {
-      console.error("Error searching places:", error);
+      console.error("Error saat pencarian:", error);
+      setSearchResults([]);
     }
   }, [handleSelectPlace]);
+
+  // Handle search input
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+
+  // Function to handle search input change
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    
+    if (value.length >= 2) {
+      // Filter untuk autocomplete
+      const lowerQuery = value.toLowerCase();
+      const suggestions = barData
+        .filter(bar => 
+          bar.name.toLowerCase().includes(lowerQuery) || 
+          bar.address.toLowerCase().includes(lowerQuery) ||
+          bar.genre.toLowerCase().includes(lowerQuery)
+        )
+        .slice(0, 5)
+        .map(bar => ({
+          id: bar.id.toString(),
+          name: bar.name,
+          address: bar.address,
+        }));
+      
+      setSearchResults(suggestions.map(sugg => ({
+        place_id: sugg.id,
+        lat: barData.find(bar => bar.id.toString() === sugg.id)?.lat.toString() || "0",
+        lon: barData.find(bar => bar.id.toString() === sugg.id)?.lon.toString() || "0",
+        display_name: `${sugg.name}, ${sugg.address}`,
+      })));
+      
+      setShowAutocomplete(suggestions.length > 0);
+    } else {
+      setSearchResults([]);
+      setShowAutocomplete(false);
+    }
+  };
+  
+  // Function to handle search form submission
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim().length >= 2) {
+      void searchPlaces(searchQuery);
+      setShowAutocomplete(false);
+    }
+  };
+  
+  // Function to handle selection from autocomplete
+  const handleAutocompleteSelect = (place: PlaceResult) => {
+    setSearchQuery(place.display_name.split(',')[0]);
+    handleSelectPlace(place);
+    setShowAutocomplete(false);
+  };
 
   // Handle POI marker click
   const handlePoiClick = (poi: (typeof barData)[0]) => {
@@ -327,12 +415,61 @@ export default function LocationSearch({
   // Initialize search when component loads (if initialQuery exists)
   useEffect(() => {
     if (initialQuery && initialQuery.length > 2) {
+      setSearchQuery(initialQuery);
       void searchPlaces(initialQuery);
     }
   }, [initialQuery, searchPlaces]);
 
   return (
     <div className="relative">
+      {/* Search bar */}
+      <div className="absolute top-4 left-0 right-0 z-[999] mx-auto w-[90%] max-w-md">
+        <form onSubmit={handleSearchSubmit} className="relative">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={handleSearchInputChange}
+            placeholder="Cari bar, pub, lounge..."
+            className="w-full rounded-full border-0 bg-white py-3 pl-4 pr-12 shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+          />
+          <button
+            type="submit"
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-red-600 p-2 text-white"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </form>
+        
+        {/* Autocomplete dropdown */}
+        {showAutocomplete && searchResults.length > 0 && (
+          <div className="absolute mt-1 w-full rounded-lg bg-white py-2 shadow-lg">
+            {searchResults.map((result) => (
+              <button
+                key={result.place_id}
+                className="w-full px-4 py-2 text-left hover:bg-gray-100"
+                onClick={() => handleAutocompleteSelect(result)}
+              >
+                <div className="font-medium">{result.display_name.split(',')[0]}</div>
+                <div className="text-xs text-gray-500 truncate">
+                  {result.display_name.split(',').slice(1).join(',')}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Leaflet Map */}
       <div className="h-full w-full">
         <MapContainer
@@ -440,19 +577,36 @@ export default function LocationSearch({
               
               {/* Text content on the right */}
               <div className="flex-grow">
-                <h2 className="text-lg font-bold text-white mb-1">bar shiru</h2>
+                <h2 className="text-lg font-bold text-white mb-1">
+                  {selectedPlace.address?.name || selectedPlace.display_name.split(",")[0]}
+                </h2>
                 <p className="text-white/80 text-xs mb-3">
-                  venue: {selectedPlace.address?.name ?? 'bar'} | hours: 2:00 am
+                  {selectedPlace.type ?? 'venue'}: {selectedPlace.address?.name ?? selectedPlace.display_name.split(",")[0]} 
+                  {selectedPlace.address?.genre && ` | genre: ${selectedPlace.address.genre}`}
                 </p>
 
                 <div className="flex flex-wrap gap-1 mb-2">
-                  <span className="bg-white/20 text-white/90 px-2 py-0.5 rounded-full text-[10px]">r&b, house</span>
-                  <span className="bg-white/20 text-white/90 px-2 py-0.5 rounded-full text-[10px]">casual</span>
-                  <span className="bg-white/20 text-white/90 px-2 py-0.5 rounded-full text-[10px]">darklit</span>
+                  {selectedPlace.category && (
+                    <span className="bg-white/20 text-white/90 px-2 py-0.5 rounded-full text-[10px]">
+                      {selectedPlace.category}
+                    </span>
+                  )}
+                  
+                  {/* Show promos from barData */}
+                  {selectedPlace.place_id && barData.find(b => b.id.toString() === selectedPlace.place_id)?.promos?.map((promo, idx) => (
+                    <span key={idx} className="bg-white/20 text-white/90 px-2 py-0.5 rounded-full text-[10px]">
+                      {promo.toLowerCase()}
+                    </span>
+                  ))}
                 </div>
 
                 {/* Additional info */}
-                <p className="text-white/70 text-[10px] mb-1">est. uber: $20 | crowd: 20-40 y/o</p>
+                <p className="text-white/70 text-[10px] mb-1">
+                  {selectedPlace.address?.phone && `phone: ${selectedPlace.address.phone}`}
+                  {selectedPlace.place_id && barData.find(b => b.id.toString() === selectedPlace.place_id)?.closeTime && 
+                    ` | closes: ${barData.find(b => b.id.toString() === selectedPlace.place_id)?.closeTime}`
+                  }
+                </p>
               </div>
             </div>
           </div>
