@@ -574,7 +574,7 @@ export default function LocationSearch({
   }, [initialQuery, searchPlaces]);
 
   // Add state to track card height
-  const [cardHeight, setCardHeight] = useState("27vh");
+  const [cardHeight, setCardHeight] = useState("28vh");
   // Add zIndex state to dynamically adjust the z-index of the card
   const [cardZIndex, setCardZIndex] = useState(1000);
 
@@ -607,9 +607,9 @@ export default function LocationSearch({
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       {/* Search bar at the top */}
-      <div className="sticky top-0 z-[999] h-[11vh] bg-white shadow-md">
+      <div className="sticky top-0 z-[999] h-[11vh] bg-white shadow-md mb">
         <form
           onSubmit={handleSearchSubmit}
           className="relative mx-auto max-w-3xl p-4"
@@ -794,8 +794,6 @@ export default function LocationSearch({
             opacity: showBottomCard ? 1 : 0,
             zIndex: cardZIndex, // Use dynamic zIndex
           }}
-          onMouseMove={handleCardDrag}
-          onMouseUp={handleCardDragEnd}
         >
           <div className="mx-auto mb-2 h-1 w-12 cursor-pointer rounded-full bg-white" />
           <div className="flex h-full flex-col">

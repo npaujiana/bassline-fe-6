@@ -7,9 +7,9 @@ interface MapViewProps {
   searchQuery: string;
 }
 
-// Simulasi data lokasi
+// Simulate location data
 const simulateLocationSearch = async (query: string) => {
-  // Simulasi pencarian berdasarkan lokasi yang telah ditentukan
+  // Simulate search based on predefined locations
   const locations = {
     "victory": {
       name: "Victory Sweet Shop/Victory Garden Cafe",
@@ -57,22 +57,22 @@ const simulateLocationSearch = async (query: string) => {
     }
   };
 
-  // Mencari kecocokan parsial pada kunci
+  // Search for partial match in keys
   const lowerQuery = query.toLowerCase();
   const matchedKey = Object.keys(locations).find(key => 
     lowerQuery.includes(key) || key.includes(lowerQuery)
   );
 
-  // Jika menemukan kecocokan, kembalikan data tersebut
+  // If a match is found, return the data
   if (matchedKey) {
     return locations[matchedKey as keyof typeof locations];
   }
   
-  // Jika tidak ada kecocokan, kembalikan data generik
+  // If no match, return generic data
   return {
     name: query,
-    address: "Lokasi tidak ditemukan secara spesifik",
-    lat: -6.2088, // Default ke Jakarta
+    address: "Location not found specifically",
+    lat: -6.2088, // Default to Jakarta
     lng: 106.8456,
     photos: [
       "https://asset.kompas.com/crops/thwHBGGZ_mg9_mHDQnYiAiRFbOk=/71x0:1071x667/750x500/data/photo/2021/10/31/617e5dc184a9f.jpg"
@@ -81,7 +81,7 @@ const simulateLocationSearch = async (query: string) => {
 };
 
 export default function MapView({ searchQuery }: MapViewProps) {
-  // State untuk menyimpan informasi tempat
+  // State to store place information
   const [placeInfo, setPlaceInfo] = useState<{
     name: string;
     address: string;
@@ -94,22 +94,22 @@ export default function MapView({ searchQuery }: MapViewProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
-  // Mencari tempat ketika komponen dimuat atau ketika query pencarian berubah
+  // Search for place when component mounts or search query changes
   useEffect(() => {
     if (!searchQuery) return;
 
     setIsLoading(true);
     
-    // Simulasi pemanggilan API
+    // Simulate API call
     const fetchData = async () => {
       try {
-        // Simulasi penundaan untuk membuat tampak seperti panggilan API yang sebenarnya
+        // Simulate delay to make it look like a real API call
         await new Promise(resolve => setTimeout(resolve, 1500));
         
         const result = await simulateLocationSearch(searchQuery);
         setPlaceInfo(result);
       } catch (error) {
-        console.error("Error saat mencari lokasi:", error);
+        console.error("Error searching for location:", error);
       } finally {
         setIsLoading(false);
       }
@@ -129,7 +129,7 @@ export default function MapView({ searchQuery }: MapViewProps) {
     return () => clearInterval(interval);
   }, [placeInfo]);
 
-  // Jika sedang memuat, tampilkan indikator loading
+  // If loading, show loading indicator
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-white flex items-center justify-center">
@@ -138,27 +138,27 @@ export default function MapView({ searchQuery }: MapViewProps) {
             <div className="absolute top-0 left-0 w-full h-full border-4 border-red-100 rounded-full animate-ping"></div>
             <div className="absolute top-0 left-0 w-full h-full border-4 border-t-red-600 rounded-full animate-spin"></div>
           </div>
-          <p className="text-base sm:text-xl text-red-600">Memuat informasi lokasi...</p>
+          <p className="text-base sm:text-xl text-red-600">Loading location information...</p>
         </div>
       </div>
     );
   }
 
-  // Jika tidak ada informasi tempat, tampilkan pesan
+  // If no place information, show message
   if (!placeInfo) {
     return (
       <div className="fixed inset-0 bg-white flex items-center justify-center">
-        <p className="text-base sm:text-xl text-red-600">Tidak dapat menemukan informasi untuk lokasi ini.</p>
+        <p className="text-base sm:text-xl text-red-600">Could not find information for this location.</p>
       </div>
     );
   }
 
-  // URL untuk peta statis menggunakan OpenStreetMap
+  // URL for static map using OpenStreetMap
   const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${placeInfo.lng - 0.01}%2C${placeInfo.lat - 0.01}%2C${placeInfo.lng + 0.01}%2C${placeInfo.lat + 0.01}&amp;layer=mapnik&amp;marker=${placeInfo.lat}%2C${placeInfo.lng}`;
 
   return (
     <div className="fixed inset-0 flex flex-col">
-      {/* Map section - mengambil 60% tinggi layar, lebar penuh */}
+      {/* Map section - takes 60% of screen height, full width */}
       <div className="relative w-full h-[60%] flex-none">
         <iframe
           src={mapUrl}
@@ -179,7 +179,7 @@ export default function MapView({ searchQuery }: MapViewProps) {
         </div>
       </div>
 
-      {/* Details section - mengambil sisa 40% layar dengan bottom sheet style */}
+      {/* Details section - takes remaining 40% of screen with bottom sheet style */}
       <div className="flex-1 bg-white rounded-t-3xl -mt-6 z-10 shadow-lg overflow-y-auto">
         <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-3 mb-2"></div>
         
@@ -207,11 +207,11 @@ export default function MapView({ searchQuery }: MapViewProps) {
                 >
                   <Image
                     src={photo}
-                    alt={`${placeInfo.name} - Foto ${index + 1}`}
+                    alt={`${placeInfo.name} - Photo ${index + 1}`}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                     className="object-cover"
-                    unoptimized // Menggunakan unoptimized karena gambar berasal dari domain eksternal
+                    unoptimized // Using unoptimized because images are from external domain
                   />
                 </div>
               ))}
@@ -224,7 +224,7 @@ export default function MapView({ searchQuery }: MapViewProps) {
                   key={index} 
                   onClick={() => setActivePhotoIndex(index)}
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${index === activePhotoIndex ? 'bg-white scale-125' : 'bg-white/60'}`}
-                  aria-label={`Lihat foto ${index + 1}`}
+                  aria-label={`View photo ${index + 1}`}
                 />
               ))}
             </div>
@@ -233,7 +233,7 @@ export default function MapView({ searchQuery }: MapViewProps) {
           {/* Description */}
           {placeInfo.description && (
             <div className="mt-4">
-              <h2 className="text-lg font-semibold mb-2">Tentang Tempat Ini</h2>
+              <h2 className="text-lg font-semibold mb-2">About This Place</h2>
               <p className="text-gray-700 text-sm leading-relaxed">{placeInfo.description}</p>
             </div>
           )}

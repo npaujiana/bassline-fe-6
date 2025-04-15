@@ -189,8 +189,8 @@ export default function Home() {
       <div className="container mx-auto px-4 py-6">
         <div className="mx-auto max-w-md md:max-w-2xl lg:max-w-4xl">
           <div className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="relative h-50 w-50 sm:h-50 sm:w-50 md:h-50 md:w-50">
+            <div className="flex justify-center">
+              <div className="relative w-[15rem] h-[15rem]">
                 <Image
                   src="/images/favicon.ico"
                   alt="BASSLINE Logo"
@@ -310,8 +310,8 @@ export default function Home() {
                 }
               </div>
             </div>
-            <p className="mt-4 text-sm sm:text-base text-red-500 font-medium">
-              OR GO STRAIGHT TO OUR <span onClick={handleMapClick} className="underline cursor-pointer">MAP</span>
+            <p onClick={handleMapClick}  className="mt-4 text-sm sm:text-base text-red-500 font-medium underline cursor-pointer">
+              OR GO STRAIGHT TO OUR MAP
             </p>
           </div>
         </div>

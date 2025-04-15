@@ -14,8 +14,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "LocationFinder - Temukan Lokasi Impian Anda",
-  description: "Aplikasi pencarian lokasi dengan tampilan futuristik",
+  title: "Bassline - Find Your Dream Location",
+  description: "Location search application with futuristic interface",
   icons: [{ rel: "icon", url: "images/favicon.ico" }],
 };
 
