@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from "@react-google-maps/api";
 
 // Component to update map position
 function MapUpdater({
@@ -13,12 +11,7 @@ function MapUpdater({
   center: [number, number];
   zoom: number;
 }) {
-  const map = useMap();
-
-  useEffect(() => {
-    map.setView(center, zoom);
-  }, [center, zoom, map]);
-
+  // Not needed with Google Maps as we'll control the map directly
   return null;
 }
 
@@ -265,22 +258,40 @@ export default function LocationSearch({
     genre: [],
   });
 
-  const mapRef = useRef<L.Map | null>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
   // Add ref for dropdown (to handle clicks outside)
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Custom icon for marker
-  const customIcon = useMemo(
-    () =>
-      new L.Icon({
-        iconUrl:
-          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24' fill='%23EA4335' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z'%3E%3C/path%3E%3Ccircle cx='12' cy='9' r='3'%3E%3C/circle%3E%3C/svg%3E",
-        iconSize: [36, 36],
-        iconAnchor: [18, 36],
-        popupAnchor: [0, -36],
-      }),
-    [],
-  );
+  // Use isLoaded from Google Maps API
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+  });
+
+  // Custom icon for marker - only create if Google Maps is loaded
+  const customIcon = useMemo(() => {
+    if (!isLoaded || typeof google === "undefined") return null;
+    
+    return {
+      url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24' fill='%23EA4335' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z'%3E%3C/path%3E%3Ccircle cx='12' cy='9' r='3'%3E%3C/circle%3E%3C/svg%3E",
+      size: new google.maps.Size(36, 36),
+      origin: new google.maps.Point(0, 0),
+      anchor: new google.maps.Point(18, 36),
+      scaledSize: new google.maps.Size(36, 36)
+    };
+  }, [isLoaded]);
+
+  // Ensure valid coordinates for GoogleMap center
+  const validCenter = useMemo(() => {
+    if (
+      selectedLocation &&
+      typeof selectedLocation[0] === "number" &&
+      typeof selectedLocation[1] === "number"
+    ) {
+      return { lat: selectedLocation[0], lng: selectedLocation[1] };
+    }
+    return { lat: defaultCenter[0], lng: defaultCenter[1] };
+  }, [selectedLocation]);
 
   // Handle category filter
   const handleCategoryFilter = (categoryId: string) => {
@@ -356,20 +367,6 @@ export default function LocationSearch({
   useEffect(() => {
     applyFilters(selectedFilters);
   }, [applyFilters, selectedFilters]);
-
-  // Fix Leaflet default icon issue in Next.js
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      // @ts-expect-error - _getIconUrl is not in the types but exists in the implementation
-      delete L.Icon.Default.prototype._getIconUrl;
-
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "/images/marker-icon-2x.png",
-        iconUrl: "/images/marker-icon.png",
-        shadowUrl: "/images/marker-shadow.png",
-      });
-    }
-  }, []);
 
   // Handle place selection from dropdown
   const handleSelectPlace = useCallback((place: PlaceResult) => {
@@ -571,40 +568,76 @@ export default function LocationSearch({
     }
   }, [initialQuery, searchPlaces]);
 
+  // Add state to track card height
+  const [cardHeight, setCardHeight] = useState("27vh");
+  // Add zIndex state to dynamically adjust the z-index of the card
+  const [cardZIndex, setCardZIndex] = useState(1000);
+
+  // Update the zIndex of the card and add a class to blur the background when the card is expanded
+  const handleCardDrag = (e: React.MouseEvent<HTMLDivElement>) => {
+    const newHeight = Math.min(
+      Math.max(window.innerHeight - e.clientY, 100), // Minimum height
+      window.innerHeight * 0.9 // Maximum height (90% of screen)
+    );
+    setCardHeight(`${newHeight}px`);
+
+    // Adjust zIndex and apply blur effect to background
+    if (newHeight > window.innerHeight * 0.5) {
+      setCardZIndex(2000); // Bring card to the front
+      document.body.classList.add("blur-background"); // Add blur effect
+    } else {
+      setCardZIndex(1000); // Reset zIndex
+      document.body.classList.remove("blur-background"); // Remove blur effect
+    }
+  };
+
+  // Ensure blur effect is removed when dragging ends
+  const handleCardDragEnd = () => {
+    if (parseInt(cardHeight) > window.innerHeight * 0.5) {
+      setCardHeight("90vh"); // Expand to 90% of screen height
+    } else {
+      setCardHeight("27vh"); // Reset to default height
+      document.body.classList.remove("blur-background"); // Remove blur effect
+    }
+  };
+
   return (
     <div className="relative">
-      {/* Search bar */}
-      <div className="absolute top-4 right-0 left-0 z-[999] mx-auto w-max">
-        <form onSubmit={handleSearchSubmit} className="relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={handleSearchInputChange}
-            placeholder="Cari bar, pub, lounge..."
-            className="w-full rounded-full border-0 bg-white py-3 pr-12 pl-4 shadow-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
-          />
-          <button
-            type="submit"
-            className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-red-600 p-2 text-white"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
+      {/* Search bar at the top */}
+      <div className="sticky top-0 z-[999] h-[11vh] bg-white shadow-md">
+        <form onSubmit={handleSearchSubmit} className="relative mx-auto max-w-3xl p-4">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchInputChange}
+              placeholder="Search for bars, pubs, lounges..."
+              className="w-full rounded-full border border-gray-300 bg-gray-50 py-3 pr-12 pl-4 shadow-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+            <button
+              type="submit"
+              className="absolute top-1/2 right-0 -translate-y-1/2 rounded-full bg-red-600 p-2 text-white"
+              style={{ right: '1rem' }}
             >
-              <path
-                fillRule="evenodd"
-                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
         </form>
 
         {/* Autocomplete dropdown */}
         {showAutocomplete && searchResults.length > 0 && (
-          <div className="absolute mt-1 w-full rounded-lg bg-white py-2 shadow-lg">
+          <div className="absolute left-0 right-0 z-10 mx-auto max-w-3xl rounded-lg bg-white py-2 shadow-lg">
             {searchResults.map((result) => (
               <button
                 key={result.place_id}
@@ -623,68 +656,33 @@ export default function LocationSearch({
         )}
       </div>
 
-      {/* Leaflet Map */}
-      <div className="h-full w-full">
-        <MapContainer
-          style={{ width: "100%", height: "55vh" }}
-          center={selectedLocation ?? defaultCenter}
-          zoom={mapZoom}
-          scrollWheelZoom={true}
-          ref={(map) => {
-            mapRef.current = map;
-          }}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+      {/* Google Map */}
+      <div className="h-[50vh] w-full">
+        {isLoaded && (
+          <GoogleMap
+            mapContainerStyle={{ width: "100%", height: "100%" }}
+            center={validCenter}
+            zoom={mapZoom}
+            onLoad={(map) => {
+              mapRef.current = map;
+            }}
+          >
+            {/* POI Markers */}
+            {poiMarkers.map((poi) => (
+              <Marker
+                key={poi.id}
+                position={{ lat: poi.lat, lng: poi.lon }}
+                {...(customIcon && { icon: customIcon })}
+                onClick={() => handlePoiClick(poi)}
+              />
+            ))}
 
-          {/* POI Markers */}
-          {poiMarkers.map((poi) => (
-            <Marker
-              key={poi.id}
-              position={[poi.lat, poi.lon]}
-              icon={customIcon}
-              eventHandlers={{
-                click: () => handlePoiClick(poi),
-              }}
-            />
-          ))}
-
-          {/* {selectedLocation && selectedPlace && (
-            <Marker
-              position={selectedLocation}
-              icon={customIcon}
-              eventHandlers={{
-                click: handleMarkerClick,
-              }}
-            >
-              {showInfoWindow && (
-                <Popup>
-                  <div className="max-w-[250px] min-w-[200px]">
-                    <h3 className="font-semibold text-gray-900">
-                      {selectedPlace.display_name.split(",")[0]}
-                    </h3>
-                    <p className="mt-1 text-sm text-gray-600">
-                      {selectedPlace.display_name}
-                    </p>
-                    <button
-                      onClick={toggleDetails}
-                      className="mt-2 text-sm font-medium text-blue-600"
-                    >
-                      View details
-                    </button>
-                  </div>
-                </Popup>
-              )}
-            </Marker>
-          )} */}
-
-          {/* Update map position when location changes */}
-          {selectedLocation && (
-            <MapUpdater center={selectedLocation} zoom={mapZoom} />
-          )}
-        </MapContainer>
+            {/* Update map position when location changes */}
+            {selectedLocation && (
+              <MapUpdater center={selectedLocation} zoom={mapZoom} />
+            )}
+          </GoogleMap>
+        )}
         {/* Category Filter */}
         <div className="mx-4 mt-3">
           <div className="flex items-center justify-between gap-2">
@@ -730,7 +728,7 @@ export default function LocationSearch({
                 {/* Only show dropdown when this specific category is selected AND showDropdown matches this category's ID */}
                 {showDropdown === category.id && (
                   <div
-                    className="absolute top-12 z-20 rounded-lg border border-gray-200 bg-white shadow-lg"
+                    className="top-12 z-[999] rounded-lg border border-gray-200 bg-white shadow-lg"
                     style={{
                       maxHeight: "150px",
                       overflowY: "auto",
@@ -781,126 +779,125 @@ export default function LocationSearch({
       {/* Bottom Card - Location Info */}
       {showBottomCard && selectedPlace && (
         <div
-          className="z-[999] h-[30%] transform rounded-t-3xl bg-gradient-to-r from-red-600 to-red-800 px-5 pt-5 pb-3 shadow-lg transition-all duration-300 ease-in-out"
+          className="fixed bottom-0 left-0 right-0 transform rounded-t-3xl bg-gradient-to-r from-red-600 to-red-800 px-5 pt-5 pb-3 shadow-lg transition-all duration-300 ease-in-out overflow-y-auto"
           style={{
+            height: cardHeight,
             transform: showBottomCard ? "translateY(0)" : "translateY(100%)",
             opacity: showBottomCard ? 1 : 0,
+            zIndex: cardZIndex, // Use dynamic zIndex
           }}
+          onMouseMove={handleCardDrag}
+          onMouseUp={handleCardDragEnd}
         >
-          <div className="flex flex-col">
+          <div className="h-1 w-12 mx-auto mb-2 bg-white rounded-full cursor-pointer" />
+          <div className="flex flex-col h-full">
             <div className="flex gap-4">
               {/* Image on the left */}
               <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg">
-                <img
-                  src={
-                    locationPhotos[0] ??
-                    "https://via.placeholder.com/400x300?text=No+Image+Available"
-                  }
-                  alt={selectedPlace.display_name}
-                  className="h-full w-full object-cover"
-                />
+          <img
+            src={
+              locationPhotos[0] ??
+              "https://via.placeholder.com/400x300?text=No+Image+Available"
+            }
+            alt={selectedPlace.display_name}
+            className="h-full w-full object-cover"
+          />
               </div>
 
               {/* Text content on the right */}
               <div className="flex-grow">
-                <h2 className="mb-1 text-lg font-bold text-white">
-                  {selectedPlace.address?.name ||
-                    selectedPlace.display_name.split(",")[0]}
-                </h2>
-                <p className="mb-3 text-xs text-white/80">
-                  {selectedPlace.type ?? "venue"}:{" "}
-                  {selectedPlace.address?.name ??
-                    selectedPlace.display_name.split(",")[0]}
-                  {selectedPlace.address?.genre &&
-                    ` | genre: ${selectedPlace.address.genre}`}
-                </p>
+          <h2 className="mb-1 text-lg font-bold text-white">
+            {selectedPlace.address?.name ||
+              selectedPlace.display_name.split(",")[0]}
+          </h2>
+          <p className="mb-3 text-xs text-white/80">
+            {selectedPlace.type ?? "venue"}: {selectedPlace.address?.name ??
+              selectedPlace.display_name.split(",")[0]}
+            {selectedPlace.address?.genre &&
+              ` | genre: ${selectedPlace.address.genre}`}
+          </p>
 
-                <div className="mb-2 flex flex-wrap gap-1">
-                  {selectedPlace.category && (
-                    <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] text-white/90">
-                      {selectedPlace.category}
-                    </span>
-                  )}
+          <div className="mb-2 flex flex-wrap gap-1">
+            {selectedPlace.category && (
+              <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] text-white/90">
+                {selectedPlace.category}
+              </span>
+            )}
 
-                  {/* Show promos from barData */}
-                  {selectedPlace.place_id &&
-                    barData
-                      .find((b) => b.id.toString() === selectedPlace.place_id)
-                      ?.promos?.map((promo, idx) => (
-                        <span
-                          key={idx}
-                          className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] text-white/90"
-                        >
-                          {promo.toLowerCase()}
-                        </span>
-                      ))}
-                </div>
+            {/* Show promos from barData */}
+            {selectedPlace.place_id &&
+              barData
+                .find((b) => b.id.toString() === selectedPlace.place_id)
+                ?.promos?.map((promo, idx) => (
+            <span
+              key={idx}
+              className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] text-white/90"
+            >
+              {promo.toLowerCase()}
+            </span>
+                ))}
+          </div>
 
-                {/* Additional info */}
-                <p className="mb-1 text-[10px] text-white/70">
-                  {selectedPlace.address?.phone &&
-                    `phone: ${selectedPlace.address.phone}`}
-                  {selectedPlace.place_id &&
-                    barData.find(
-                      (b) => b.id.toString() === selectedPlace.place_id,
-                    )?.closeTime &&
-                    ` | closes: ${barData.find((b) => b.id.toString() === selectedPlace.place_id)?.closeTime}`}
-                </p>
+          {/* Additional info */}
+          <p className="mb-1 text-[10px] text-white/70">
+            {selectedPlace.address?.phone &&
+              `Phone: ${selectedPlace.address.phone}`}
+            {selectedPlace.place_id &&
+              barData.find(
+                (b) => b.id.toString() === selectedPlace.place_id,
+              )?.closeTime &&
+              ` | Closes: ${barData.find((b) => b.id.toString() === selectedPlace.place_id)?.closeTime}`}
+          </p>
+              </div>
+            </div>
+
+            {/* Additional Details */}
+            <div className="mt-4">
+              <h3 className="text-md font-semibold text-white">Details</h3>
+              <ul className="mt-2 space-y-1 text-sm text-white/80">
+          <li>
+            <strong>Address:</strong> {selectedPlace.address?.road || "N/A"}
+          </li>
+          <li>
+            <strong>Rating:</strong> {barData.find((b) => b.id.toString() === selectedPlace.place_id)?.rating || "N/A"}
+          </li>
+          <li>
+            <strong>Reviews:</strong> {barData.find((b) => b.id.toString() === selectedPlace.place_id)?.reviews || "N/A"}
+          </li>
+          <li>
+            <strong>Open Time:</strong> {barData.find((b) => b.id.toString() === selectedPlace.place_id)?.openTime || "N/A"}
+          </li>
+          <li>
+            <strong>Close Time:</strong> {barData.find((b) => b.id.toString() === selectedPlace.place_id)?.closeTime || "N/A"}
+          </li>
+              </ul>
+            </div>
+
+            {/* Carousel Placeholder */}
+            <div className="mt-6">
+              <h3 className="text-md font-semibold text-white">Nearby Locations</h3>
+              <div className="mt-2 flex gap-4 overflow-x-auto">
+          {barData.map((bar) => (
+            <div
+              key={bar.id}
+              className="min-w-[200px] flex-shrink-0 rounded-lg bg-white p-3 shadow-md"
+            >
+              <img
+                src={bar.image}
+                alt={bar.name}
+                className="h-32 w-full rounded-md object-cover"
+              />
+              <h4 className="mt-2 text-sm font-bold text-gray-800">
+                {bar.name}
+              </h4>
+              <p className="text-xs text-gray-600">{bar.address}</p>
+            </div>
+          ))}
               </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* My Location Button */}
-      {/* <div className="absolute right-4 bottom-24 z-[998]">
-        <button
-          onClick={() => {
-            if (navigator.geolocation) {
-              navigator.geolocation.getCurrentPosition(
-                (position) => {
-                  const lat = position.coords.latitude;
-                  const lng = position.coords.longitude;
-                  setSelectedLocation([lat, lng]);
-                  setMapZoom(17);
-
-                  // Fetch location details based on coordinates (reverse geocoding)
-                  fetch(
-                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
-                  )
-                    .then((res) => res.json())
-                    .then((data) => {
-                      if (data) {
-                        setSelectedPlace(data as PlaceResult);
-                        setShowBottomCard(true);
-                      }
-                    })
-                    .catch((error) => {
-                      console.error("Error fetching location details:", error);
-                    });
-                },
-                () => {
-                  alert("Unable to find your location.");
-                },
-              );
-            }
-          }}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg focus:outline-none"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 text-gray-700"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </button>
-      </div> */}
     </div>
   );
 }
