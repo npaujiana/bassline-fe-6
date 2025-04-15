@@ -819,17 +819,24 @@ export default function LocationSearch({
                     selectedPlace.display_name.split(",")[0]}
                 </h2>
                 <p className="mb-3 text-xs text-white/80">
-                  {selectedPlace.type ?? "venue"}:{" "}
+                  {selectedPlace.type ?? "Venue"}:{" "}
                   {selectedPlace.address?.name ??
                     selectedPlace.display_name.split(",")[0]}
                   {selectedPlace.address?.genre &&
-                    ` | genre: ${selectedPlace.address.genre}`}
+                    ` | Genre: ${selectedPlace.address.genre}`}
                 </p>
 
                 <div className="mb-2 flex flex-wrap gap-1">
                   {selectedPlace.category && (
                     <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] text-white/90">
-                      {selectedPlace.category}
+                      {selectedPlace.category
+                        .split(" ")
+                        .map(
+                          (word) =>
+                            word.charAt(0).toUpperCase() +
+                            word.slice(1).toLowerCase(),
+                        )
+                        .join(" ")}
                     </span>
                   )}
 
