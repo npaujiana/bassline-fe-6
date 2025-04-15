@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from "@react-google-maps/api";
+import {
+  GoogleMap,
+  useJsApiLoader,
+  Marker,
+  InfoWindow,
+} from "@react-google-maps/api";
 
 // Component to update map position
 function MapUpdater({
@@ -271,13 +276,13 @@ export default function LocationSearch({
   // Custom icon for marker - only create if Google Maps is loaded
   const customIcon = useMemo(() => {
     if (!isLoaded || typeof google === "undefined") return null;
-    
+
     return {
       url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24' fill='%23EA4335' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z'%3E%3C/path%3E%3Ccircle cx='12' cy='9' r='3'%3E%3C/circle%3E%3C/svg%3E",
       size: new google.maps.Size(36, 36),
       origin: new google.maps.Point(0, 0),
       anchor: new google.maps.Point(18, 36),
-      scaledSize: new google.maps.Size(36, 36)
+      scaledSize: new google.maps.Size(36, 36),
     };
   }, [isLoaded]);
 
@@ -577,7 +582,7 @@ export default function LocationSearch({
   const handleCardDrag = (e: React.MouseEvent<HTMLDivElement>) => {
     const newHeight = Math.min(
       Math.max(window.innerHeight - e.clientY, 100), // Minimum height
-      window.innerHeight * 0.9 // Maximum height (90% of screen)
+      window.innerHeight * 0.9, // Maximum height (90% of screen)
     );
     setCardHeight(`${newHeight}px`);
 
@@ -605,19 +610,22 @@ export default function LocationSearch({
     <div className="relative">
       {/* Search bar at the top */}
       <div className="sticky top-0 z-[999] h-[11vh] bg-white shadow-md">
-        <form onSubmit={handleSearchSubmit} className="relative mx-auto max-w-3xl p-4">
+        <form
+          onSubmit={handleSearchSubmit}
+          className="relative mx-auto max-w-3xl p-4"
+        >
           <div className="relative">
             <input
               type="text"
               value={searchQuery}
               onChange={handleSearchInputChange}
               placeholder="Search for bars, pubs, lounges..."
-              className="w-full rounded-full border border-gray-300 bg-gray-50 py-3 pr-12 pl-4 shadow-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full rounded-full border border-gray-300 bg-gray-50 py-3 pr-12 pl-4 shadow-sm focus:border-red-500 focus:ring-2 focus:ring-red-500 focus:outline-none"
             />
             <button
               type="submit"
               className="absolute top-1/2 right-0 -translate-y-1/2 rounded-full bg-red-600 p-2 text-white"
-              style={{ right: '1rem' }}
+              style={{ right: "1rem" }}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -637,7 +645,7 @@ export default function LocationSearch({
 
         {/* Autocomplete dropdown */}
         {showAutocomplete && searchResults.length > 0 && (
-          <div className="absolute left-0 right-0 z-10 mx-auto max-w-3xl rounded-lg bg-white py-2 shadow-lg">
+          <div className="absolute right-0 left-0 z-10 mx-auto max-w-3xl rounded-lg bg-white py-2 shadow-lg">
             {searchResults.map((result) => (
               <button
                 key={result.place_id}
@@ -728,7 +736,7 @@ export default function LocationSearch({
                 {/* Only show dropdown when this specific category is selected AND showDropdown matches this category's ID */}
                 {showDropdown === category.id && (
                   <div
-                    className="top-12 z-[999] rounded-lg border border-gray-200 bg-white shadow-lg"
+                    className="absolute top-12 z-20 rounded-lg border border-gray-200 bg-white shadow-lg"
                     style={{
                       maxHeight: "150px",
                       overflowY: "auto",
@@ -779,7 +787,7 @@ export default function LocationSearch({
       {/* Bottom Card - Location Info */}
       {showBottomCard && selectedPlace && (
         <div
-          className="fixed bottom-0 left-0 right-0 transform rounded-t-3xl bg-gradient-to-r from-red-600 to-red-800 px-5 pt-5 pb-3 shadow-lg transition-all duration-300 ease-in-out overflow-y-auto"
+          className="fixed right-0 bottom-0 left-0 transform overflow-y-auto rounded-t-3xl bg-gradient-to-r from-red-600 to-red-800 px-5 pt-5 pb-3 shadow-lg transition-all duration-300 ease-in-out"
           style={{
             height: cardHeight,
             transform: showBottomCard ? "translateY(0)" : "translateY(100%)",
@@ -789,65 +797,66 @@ export default function LocationSearch({
           onMouseMove={handleCardDrag}
           onMouseUp={handleCardDragEnd}
         >
-          <div className="h-1 w-12 mx-auto mb-2 bg-white rounded-full cursor-pointer" />
-          <div className="flex flex-col h-full">
+          <div className="mx-auto mb-2 h-1 w-12 cursor-pointer rounded-full bg-white" />
+          <div className="flex h-full flex-col">
             <div className="flex gap-4">
               {/* Image on the left */}
               <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg">
-          <img
-            src={
-              locationPhotos[0] ??
-              "https://via.placeholder.com/400x300?text=No+Image+Available"
-            }
-            alt={selectedPlace.display_name}
-            className="h-full w-full object-cover"
-          />
+                <img
+                  src={
+                    locationPhotos[0] ??
+                    "https://via.placeholder.com/400x300?text=No+Image+Available"
+                  }
+                  alt={selectedPlace.display_name}
+                  className="h-full w-full object-cover"
+                />
               </div>
 
               {/* Text content on the right */}
               <div className="flex-grow">
-          <h2 className="mb-1 text-lg font-bold text-white">
-            {selectedPlace.address?.name ||
-              selectedPlace.display_name.split(",")[0]}
-          </h2>
-          <p className="mb-3 text-xs text-white/80">
-            {selectedPlace.type ?? "venue"}: {selectedPlace.address?.name ??
-              selectedPlace.display_name.split(",")[0]}
-            {selectedPlace.address?.genre &&
-              ` | genre: ${selectedPlace.address.genre}`}
-          </p>
+                <h2 className="mb-1 text-lg font-bold text-white">
+                  {selectedPlace.address?.name ||
+                    selectedPlace.display_name.split(",")[0]}
+                </h2>
+                <p className="mb-3 text-xs text-white/80">
+                  {selectedPlace.type ?? "venue"}:{" "}
+                  {selectedPlace.address?.name ??
+                    selectedPlace.display_name.split(",")[0]}
+                  {selectedPlace.address?.genre &&
+                    ` | genre: ${selectedPlace.address.genre}`}
+                </p>
 
-          <div className="mb-2 flex flex-wrap gap-1">
-            {selectedPlace.category && (
-              <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] text-white/90">
-                {selectedPlace.category}
-              </span>
-            )}
+                <div className="mb-2 flex flex-wrap gap-1">
+                  {selectedPlace.category && (
+                    <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] text-white/90">
+                      {selectedPlace.category}
+                    </span>
+                  )}
 
-            {/* Show promos from barData */}
-            {selectedPlace.place_id &&
-              barData
-                .find((b) => b.id.toString() === selectedPlace.place_id)
-                ?.promos?.map((promo, idx) => (
-            <span
-              key={idx}
-              className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] text-white/90"
-            >
-              {promo.toLowerCase()}
-            </span>
-                ))}
-          </div>
+                  {/* Show promos from barData */}
+                  {selectedPlace.place_id &&
+                    barData
+                      .find((b) => b.id.toString() === selectedPlace.place_id)
+                      ?.promos?.map((promo, idx) => (
+                        <span
+                          key={idx}
+                          className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] text-white/90"
+                        >
+                          {promo.toLowerCase()}
+                        </span>
+                      ))}
+                </div>
 
-          {/* Additional info */}
-          <p className="mb-1 text-[10px] text-white/70">
-            {selectedPlace.address?.phone &&
-              `Phone: ${selectedPlace.address.phone}`}
-            {selectedPlace.place_id &&
-              barData.find(
-                (b) => b.id.toString() === selectedPlace.place_id,
-              )?.closeTime &&
-              ` | Closes: ${barData.find((b) => b.id.toString() === selectedPlace.place_id)?.closeTime}`}
-          </p>
+                {/* Additional info */}
+                <p className="mb-1 text-[10px] text-white/70">
+                  {selectedPlace.address?.phone &&
+                    `Phone: ${selectedPlace.address.phone}`}
+                  {selectedPlace.place_id &&
+                    barData.find(
+                      (b) => b.id.toString() === selectedPlace.place_id,
+                    )?.closeTime &&
+                    ` | Closes: ${barData.find((b) => b.id.toString() === selectedPlace.place_id)?.closeTime}`}
+                </p>
               </div>
             </div>
 
@@ -855,44 +864,59 @@ export default function LocationSearch({
             <div className="mt-4">
               <h3 className="text-md font-semibold text-white">Details</h3>
               <ul className="mt-2 space-y-1 text-sm text-white/80">
-          <li>
-            <strong>Address:</strong> {selectedPlace.address?.road || "N/A"}
-          </li>
-          <li>
-            <strong>Rating:</strong> {barData.find((b) => b.id.toString() === selectedPlace.place_id)?.rating || "N/A"}
-          </li>
-          <li>
-            <strong>Reviews:</strong> {barData.find((b) => b.id.toString() === selectedPlace.place_id)?.reviews || "N/A"}
-          </li>
-          <li>
-            <strong>Open Time:</strong> {barData.find((b) => b.id.toString() === selectedPlace.place_id)?.openTime || "N/A"}
-          </li>
-          <li>
-            <strong>Close Time:</strong> {barData.find((b) => b.id.toString() === selectedPlace.place_id)?.closeTime || "N/A"}
-          </li>
+                <li>
+                  <strong>Address:</strong>{" "}
+                  {selectedPlace.address?.road || "N/A"}
+                </li>
+                <li>
+                  <strong>Rating:</strong>{" "}
+                  {barData.find(
+                    (b) => b.id.toString() === selectedPlace.place_id,
+                  )?.rating || "N/A"}
+                </li>
+                <li>
+                  <strong>Reviews:</strong>{" "}
+                  {barData.find(
+                    (b) => b.id.toString() === selectedPlace.place_id,
+                  )?.reviews || "N/A"}
+                </li>
+                <li>
+                  <strong>Open Time:</strong>{" "}
+                  {barData.find(
+                    (b) => b.id.toString() === selectedPlace.place_id,
+                  )?.openTime || "N/A"}
+                </li>
+                <li>
+                  <strong>Close Time:</strong>{" "}
+                  {barData.find(
+                    (b) => b.id.toString() === selectedPlace.place_id,
+                  )?.closeTime || "N/A"}
+                </li>
               </ul>
             </div>
 
             {/* Carousel Placeholder */}
             <div className="mt-6">
-              <h3 className="text-md font-semibold text-white">Nearby Locations</h3>
+              <h3 className="text-md font-semibold text-white">
+                Nearby Locations
+              </h3>
               <div className="mt-2 flex gap-4 overflow-x-auto">
-          {barData.map((bar) => (
-            <div
-              key={bar.id}
-              className="min-w-[200px] flex-shrink-0 rounded-lg bg-white p-3 shadow-md"
-            >
-              <img
-                src={bar.image}
-                alt={bar.name}
-                className="h-32 w-full rounded-md object-cover"
-              />
-              <h4 className="mt-2 text-sm font-bold text-gray-800">
-                {bar.name}
-              </h4>
-              <p className="text-xs text-gray-600">{bar.address}</p>
-            </div>
-          ))}
+                {barData.map((bar) => (
+                  <div
+                    key={bar.id}
+                    className="min-w-[200px] flex-shrink-0 rounded-lg bg-white p-3 shadow-md"
+                  >
+                    <img
+                      src={bar.image}
+                      alt={bar.name}
+                      className="h-32 w-full rounded-md object-cover"
+                    />
+                    <h4 className="mt-2 text-sm font-bold text-gray-800">
+                      {bar.name}
+                    </h4>
+                    <p className="text-xs text-gray-600">{bar.address}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
