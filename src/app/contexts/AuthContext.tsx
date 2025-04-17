@@ -165,7 +165,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       // Update state
       setAccessToken(accessToken);
-      setRefreshToken(refreshToken);
+      setRefreshToken(refreshToken || null);
       
       // Extract and store user data
       const userData = extractUserInfo(accessToken, data);

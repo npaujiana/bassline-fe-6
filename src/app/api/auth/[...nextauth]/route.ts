@@ -35,10 +35,14 @@ export const authOptions = {
 
           console.log("Login response:", response);
 
-          if (response.status === 200 && response) {
-            // Simpan token jika login berhasil
-            const user = response;
-            return user;
+          if (response.status === 200 && response.data) {
+            // Transform the response data into a User object
+            return {
+              id: response.data.id || response.data._id || 'default-id',
+              name: response.data.name || credentials.username,
+              email: response.data.email || credentials.username,
+              accessToken: response.data.accessToken || response.data.token
+            };
           }
           return null;
         } catch (error) {
@@ -49,7 +53,7 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account }: { token: any; user: any; account: any }) {
       if (account && account.provider === 'google') {
         // Jika login dengan Google, kirim token ke backend untuk verifikasi
         try {
@@ -81,7 +85,7 @@ export const authOptions = {
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: any; token: any }) {
       session.user.accessToken = token.accessToken;
       session.user.id = token.id;
       return session;
