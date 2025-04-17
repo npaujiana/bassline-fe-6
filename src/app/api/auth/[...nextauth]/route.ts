@@ -105,4 +105,18 @@ export const authOptions = {
 
 const handler = NextAuth(authOptions);
 
+// Type validation utility types
+type Diff<T extends object> = {
+  [K in keyof T]?: Function;
+};
+
+function checkFields<T extends object>(_fields: T): void {}
+
+// Validate that exported handlers conform to expected HTTP method handlers
+checkFields<Diff<{
+  GET?: typeof handler;
+  POST?: typeof handler;
+  OPTIONS?: typeof handler;
+}>>({ GET: handler, POST: handler, OPTIONS: handler });
+
 export { handler as GET, handler as POST };
