@@ -96,6 +96,143 @@ const dropdownOptions = {
   ],
 };
 
+// Enhance bar data with more specific fields for filtering
+const barData = [
+  {
+    id: 1,
+    name: "The Dead Rabbit",
+    lat: 40.7037,
+    lon: -74.0122,
+    rating: 4.8,
+    reviews: 1255,
+    type: "venue",
+    venueType: "Pub",
+    openTime: "12:00 PM",
+    closeTime: "2:00 AM",
+    promos: ["HAPPY HOUR", "FREE APPETIZER", "LIVE MUSIC"],
+    address: "30 Water St, New York, NY 10004",
+    phone: "+1-212-422-7906",
+    genre: "Irish Pub",
+    musicGenre: "Rock",
+    image:
+      "https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1074&q=80",
+  },
+  {
+    id: 2,
+    name: "Employees Only",
+    lat: 40.7329,
+    lon: -74.005,
+    rating: 4.7,
+    reviews: 890,
+    type: "venue",
+    venueType: "Speakeasy",
+    openTime: "6:00 PM",
+    closeTime: "4:00 AM",
+    promos: ["CRAFT COCKTAILS", "LATE NIGHT MENU"],
+    address: "510 Hudson St, New York, NY 10014",
+    phone: "+1-212-242-3021",
+    genre: "Speakeasy",
+    musicGenre: "Jazz",
+    image:
+      "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1029&q=80",
+  },
+  {
+    id: 3,
+    name: "Trick Dog",
+    lat: 37.7593,
+    lon: -122.4125,
+    rating: 4.6,
+    reviews: 750,
+    type: "venue",
+    venueType: "Bar",
+    openTime: "5:00 PM",
+    closeTime: "2:00 AM",
+    promos: ["THEMED MENU", "CRAFT BEER"],
+    address: "3010 20th St, San Francisco, CA 94110",
+    phone: "+1-415-471-2999",
+    genre: "Cocktail Bar",
+    musicGenre: "Hip Hop",
+    image:
+      "https://images.unsplash.com/photo-1470337458703-46ad1756a187?ixlib=rb-1.2.1&auto=format&fit=crop&w=1170&q=80",
+  },
+  {
+    id: 4,
+    name: "The Aviary",
+    lat: 41.8866,
+    lon: -87.6525,
+    rating: 4.9,
+    reviews: 605,
+    type: "venue",
+    venueType: "Restaurant",
+    openTime: "7:00 PM",
+    closeTime: "1:00 AM",
+    promos: ["RESERVATION ONLY", "TASTING MENU"],
+    address: "955 W Fulton Market, Chicago, IL 60607",
+    phone: "+1-312-226-0868",
+    genre: "Molecular Mixology",
+    musicGenre: "Jazz",
+    image:
+      "https://images.unsplash.com/photo-1525268323446-0505b6fe7778?ixlib=rb-1.2.1&auto=format&fit=crop&w=1172&q=80",
+  },
+  {
+    id: 5,
+    name: "Death & Co",
+    lat: 40.7264,
+    lon: -73.9847,
+    rating: 4.7,
+    reviews: 1100,
+    type: "venue",
+    venueType: "Lounge",
+    openTime: "6:00 PM",
+    closeTime: "3:00 AM",
+    promos: ["SIGNATURE COCKTAILS", "INTIMATE SETTING"],
+    address: "433 E 6th St, New York, NY 10009",
+    phone: "+1-212-388-0882",
+    genre: "Cocktail Lounge",
+    musicGenre: "Blues",
+    image:
+      "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?ixlib=rb-1.2.1&auto=format&fit=crop&w=1074&q=80",
+  },
+  {
+    id: 6,
+    name: "Attaboy",
+    lat: 40.7194,
+    lon: -73.9909,
+    rating: 4.8,
+    reviews: 735,
+    type: "venue",
+    venueType: "Speakeasy",
+    openTime: "8:00 PM",
+    closeTime: "4:00 AM",
+    promos: ["NO MENU", "BESPOKE COCKTAILS"],
+    address: "134 Eldridge St, New York, NY 10002",
+    phone: "+1-212-555-1212",
+    genre: "Speakeasy",
+    musicGenre: "Jazz",
+    image:
+      "https://images.unsplash.com/photo-1582819509237-01cde5a3d7b1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1170&q=80",
+  },
+  {
+    id: 7,
+    name: "Columbia Room",
+    lat: 38.907,
+    lon: -77.0211,
+    rating: 4.7,
+    reviews: 420,
+    type: "venue",
+    venueType: "Lounge",
+    openTime: "5:00 PM",
+    closeTime: "12:00 AM",
+    promos: ["TASTING MENU", "AWARD-WINNING"],
+    address: "124 Blagden Alley NW, Washington, DC 20001",
+    phone: "+1-202-316-9396",
+    genre: "Craft Cocktails",
+    musicGenre: "RnB",
+    image:
+      "https://images.unsplash.com/photo-1529502669403-c073b74fcefb?ixlib=rb-1.2.1&auto=format&fit=crop&w=1074&q=80",
+  },
+];
+
 export default function LocationSearch({
   initialQuery = "",
 }: LocationSearchProps) {
@@ -113,9 +250,9 @@ export default function LocationSearch({
 
   // State for category filter
   const [selectedCategory, setSelectedCategory] = useState("venue");
-  // const [poiMarkers, setPoiMarkers] = useState(
-  //   barData.filter((bar) => bar.type === "venue"),
-  // );
+  const [poiMarkers, setPoiMarkers] = useState(
+    barData.filter((bar) => bar.type === "venue"),
+  );
   // Change initial state to null so no dropdown is visible on first load
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
   const [selectedFilters, setSelectedFilters] = useState<
@@ -204,31 +341,31 @@ export default function LocationSearch({
 
   // Function to filter POI markers based on selected filters
   const applyFilters = useCallback((filters: Record<string, string[]>) => {
-    // let filteredData = [...barData];
+    let filteredData = [...barData];
 
-    // // Filter by venue type if any venue filters are selected
-    // if (filters.venue && filters.venue.length > 0) {
-    //   filteredData = filteredData.filter((bar) =>
-    //     filters.venue?.includes(bar.venueType),
-    //   );
-    // }
+    // Filter by venue type if any venue filters are selected
+    if (filters.venue && filters.venue.length > 0) {
+      filteredData = filteredData.filter((bar) =>
+        filters.venue?.includes(bar.venueType),
+      );
+    }
 
-    // // Filter by time if any time filters are selected
-    // if (filters.time && filters.time.length > 0) {
-    //   filteredData = filteredData.filter((bar) =>
-    //     filters.time?.includes(bar.openTime),
-    //   );
-    // }
+    // Filter by time if any time filters are selected
+    if (filters.time && filters.time.length > 0) {
+      filteredData = filteredData.filter((bar) =>
+        filters.time?.includes(bar.openTime),
+      );
+    }
 
-    // // Filter by genre if any genre filters are selected
-    // if (filters.genre && filters.genre.length > 0) {
-    //   filteredData = filteredData.filter((bar) =>
-    //     filters.genre?.includes(bar.musicGenre),
-    //   );
-    // }
+    // Filter by genre if any genre filters are selected
+    if (filters.genre && filters.genre.length > 0) {
+      filteredData = filteredData.filter((bar) =>
+        filters.genre?.includes(bar.musicGenre),
+      );
+    }
 
-    // // Update markers
-    // setPoiMarkers(filteredData);
+    // Update markers
+    setPoiMarkers(filteredData);
   }, []);
 
   // Apply initial filtering
@@ -256,15 +393,15 @@ export default function LocationSearch({
     setShowBottomCard(true);
 
     // Temukan gambar dari barData
-    // const bar = barData.find((b) => b.id.toString() === place.place_id);
-    // if (bar?.image) {
-    //   setLocationPhotos([bar.image]);
-    // } else {
-    //   // Set default photo if none available
-    //   setLocationPhotos([
-    //     "https://via.placeholder.com/400x300?text=No+Image+Available",
-    //   ]);
-    // }
+    const bar = barData.find((b) => b.id.toString() === place.place_id);
+    if (bar?.image) {
+      setLocationPhotos([bar.image]);
+    } else {
+      // Set default photo if none available
+      setLocationPhotos([
+        "https://via.placeholder.com/400x300?text=No+Image+Available",
+      ]);
+    }
   }, []);
 
   // Search places with Google Maps Places API
@@ -311,43 +448,43 @@ export default function LocationSearch({
     const lowerQuery = query.toLowerCase();
     
     // Filter barData based on name or address matching the query
-    // const matchedBars = barData
-    //   .filter(
-    //     (bar) =>
-    //       bar.name.toLowerCase().includes(lowerQuery) ||
-    //       bar.address.toLowerCase().includes(lowerQuery) ||
-    //       bar.genre.toLowerCase().includes(lowerQuery),
-    //   )
-    //   .slice(0, 5);
+    const matchedBars = barData
+      .filter(
+        (bar) =>
+          bar.name.toLowerCase().includes(lowerQuery) ||
+          bar.address.toLowerCase().includes(lowerQuery) ||
+          bar.genre.toLowerCase().includes(lowerQuery),
+      )
+      .slice(0, 5);
 
-    // if (matchedBars.length > 0) {
-    //   // Convert barData to PlaceResult format
-    //   const results: PlaceResult[] = matchedBars.map((bar) => ({
-    //     place_id: bar.id.toString(),
-    //     lat: bar.lat.toString(),
-    //     lon: bar.lon.toString(),
-    //     display_name: `${bar.name}, ${bar.address}`,
-    //     type: bar.type,
-    //     category: bar.genre,
-    //     address: {
-    //       road: bar.address,
-    //       phone: bar.phone,
-    //       name: bar.name,
-    //       genre: bar.genre,
-    //     },
-    //   }));
+    if (matchedBars.length > 0) {
+      // Convert barData to PlaceResult format
+      const results: PlaceResult[] = matchedBars.map((bar) => ({
+        place_id: bar.id.toString(),
+        lat: bar.lat.toString(),
+        lon: bar.lon.toString(),
+        display_name: `${bar.name}, ${bar.address}`,
+        type: bar.type,
+        category: bar.genre,
+        address: {
+          road: bar.address,
+          phone: bar.phone,
+          name: bar.name,
+          genre: bar.genre,
+        },
+      }));
 
-    //   setSearchResults(results);
+      setSearchResults(results);
 
-    //   // Auto select first result
-    //   if (results[0]) {
-    //     handleSelectPlace(results[0]);
-    //   }
-    // } else {
-    //   // No results
-    //   setSearchResults([]);
-    //   console.log("No search results for:", query);
-    // }
+      // Auto select first result
+      if (results[0]) {
+        handleSelectPlace(results[0]);
+      }
+    } else {
+      // No results
+      setSearchResults([]);
+      console.log("No search results for:", query);
+    }
   };
 
   // Handle search input
@@ -379,8 +516,8 @@ export default function LocationSearch({
         // Transform API response to match our PlaceResult format
         const suggestions: PlaceResult[] = data.predictions.map((prediction: any) => ({
           place_id: prediction.place_id,
-          lat: prediction.lat ? String(prediction.lat) : "",
-          lon: prediction.lng ? String(prediction.lng) : "",
+          lat: prediction.lat || "0", // API may not return coordinates directly
+          lon: prediction.lng || "0",
           display_name: prediction.description,
           type: prediction.types?.[0] || "establishment",
         }));
@@ -393,23 +530,23 @@ export default function LocationSearch({
       
       // Fallback to local search if API fails
       const lowerQuery = input.toLowerCase();
-      // const suggestions = barData
-      //   .filter(
-      //     (bar) =>
-      //       bar.name.toLowerCase().includes(lowerQuery) ||
-      //       bar.address.toLowerCase().includes(lowerQuery) ||
-      //       bar.genre.toLowerCase().includes(lowerQuery),
-      //   )
-      //   .slice(0, 5)
-      //   .map((bar) => ({
-      //     place_id: bar.id.toString(),
-      //     lat: bar.lat.toString(),
-      //     lon: bar.lon.toString(),
-      //     display_name: `${bar.name}, ${bar.address}`,
-      //   }));
+      const suggestions = barData
+        .filter(
+          (bar) =>
+            bar.name.toLowerCase().includes(lowerQuery) ||
+            bar.address.toLowerCase().includes(lowerQuery) ||
+            bar.genre.toLowerCase().includes(lowerQuery),
+        )
+        .slice(0, 5)
+        .map((bar) => ({
+          place_id: bar.id.toString(),
+          lat: bar.lat.toString(),
+          lon: bar.lon.toString(),
+          display_name: `${bar.name}, ${bar.address}`,
+        }));
 
-      // setSearchResults(suggestions);
-      // setShowAutocomplete(suggestions.length > 0);
+      setSearchResults(suggestions);
+      setShowAutocomplete(suggestions.length > 0);
     }
   };
 
@@ -423,81 +560,34 @@ export default function LocationSearch({
   };
 
   // Function to handle selection from autocomplete
-  const handleAutocompleteSelect = async (place: PlaceResult) => {
+  const handleAutocompleteSelect = (place: PlaceResult) => {
     setSearchQuery(place.display_name?.split(",")[0] ?? "");
+    handleSelectPlace(place);
     setShowAutocomplete(false);
-
-    try {
-      // Fetch place details by place_id
-      const response = await fetch(`/api/google-maps/place-details/?place_id=${encodeURIComponent(place.place_id)}`);
-
-      if (!response.ok) {
-        console.error(`Error fetching place details: HTTP ${response.status}`);
-        return;
-      }
-
-      const text = await response.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (parseError) {
-        console.error("Failed to parse JSON from place details response:", parseError);
-        return;
-      }
-
-      if (data && data.result && data.result.geometry && data.result.geometry.location) {
-        const location = data.result.geometry.location;
-        const lat = location.lat;
-        const lng = location.lng;
-
-        // Set map location and zoom
-        setSelectedLocation([lat, lng]);
-        setMapZoom(17);
-
-        // Set selected place details
-        setSelectedPlace({
-          place_id: place.place_id,
-          lat: String(lat),
-          lon: String(lng),
-          display_name: place.display_name,
-          type: place.type,
-          category: place.category,
-          address: place.address,
-        });
-
-        // Show info window and bottom card
-        setShowInfoWindow(true);
-        setShowBottomCard(true);
-      } else {
-        console.error("Place details not found for place_id:", place.place_id);
-      }
-    } catch (error) {
-      console.error("Error fetching place details:", error);
-    }
   };
 
   // Handle POI marker click
-  // const handlePoiClick = (poi: (typeof barData)[0]) => {
-  //   setSelectedLocation([poi.lat, poi.lon]);
-  //   setSelectedPlace({
-  //     place_id: poi.id.toString(),
-  //     lat: poi.lat.toString(),
-  //     lon: poi.lon.toString(),
-  //     display_name: poi.name + ", " + poi.address,
-  //     type: poi.type,
-  //     category: poi.genre,
-  //     address: {
-  //       road: poi.address,
-  //       phone: poi.phone,
-  //       name: poi.name,
-  //       genre: poi.genre,
-  //     },
-  //   });
-  //   setMapZoom(17);
-  //   setShowInfoWindow(true);
-  //   setShowBottomCard(true);
-  //   setLocationPhotos([poi.image]);
-  // };
+  const handlePoiClick = (poi: (typeof barData)[0]) => {
+    setSelectedLocation([poi.lat, poi.lon]);
+    setSelectedPlace({
+      place_id: poi.id.toString(),
+      lat: poi.lat.toString(),
+      lon: poi.lon.toString(),
+      display_name: poi.name + ", " + poi.address,
+      type: poi.type,
+      category: poi.genre,
+      address: {
+        road: poi.address,
+        phone: poi.phone,
+        name: poi.name,
+        genre: poi.genre,
+      },
+    });
+    setMapZoom(17);
+    setShowInfoWindow(true);
+    setShowBottomCard(true);
+    setLocationPhotos([poi.image]);
+  };
 
   // Handle marker click
   const handleMarkerClick = () => {
@@ -561,12 +651,15 @@ export default function LocationSearch({
   };
 
   return (
-    <div className="relative w-full">
-      {/* Search bar at the top */}
+    <div className="relative w-full">      
+      {/* Search bar at the top */}        
       <div className="sticky top-0 z-[999] h-[11vh] bg-white shadow-md mb">
         <form
-          onSubmit={handleSearchSubmit}
-          className="relative mx-auto max-w-3xl p-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSearchSubmit(e);
+          }}
+          className="flex items-center h-full px-4"
         >
           <div className="relative">
             <input
@@ -596,27 +689,27 @@ export default function LocationSearch({
             </button>
           </div>
         </form>
-
-        {/* Autocomplete dropdown */}
-        {showAutocomplete && searchResults.length > 0 && (
-          <div className="absolute right-0 left-0 z-10 mx-auto max-w-3xl rounded-lg bg-white py-2 shadow-lg">
-            {searchResults.map((result) => (
-              <button
-                key={result.place_id}
-                className="w-full px-4 py-2 text-left hover:bg-gray-100"
-                onClick={() => handleAutocompleteSelect(result)}
-              >
-                <div className="font-medium">
-                  {result.display_name.split(",")[0]}
-                </div>
-                <div className="truncate text-xs text-gray-500">
-                  {result.display_name.split(",").slice(1).join(",")}
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
       </div>
+
+      {/* Autocomplete dropdown */}
+      {showAutocomplete && searchResults.length > 0 && (
+        <div className="absolute right-0 left-0 z-10 mx-auto max-w-3xl rounded-lg bg-white py-2 shadow-lg">
+          {searchResults.map((result) => (
+            <button
+              key={result.place_id}
+              className="w-full px-4 py-2 text-left hover:bg-gray-100"
+              onClick={() => handleAutocompleteSelect(result)}
+            >
+              <div className="font-medium">
+                {result.display_name.split(",")[0]}
+              </div>
+              <div className="truncate text-xs text-gray-500">
+                {result.display_name.split(",").slice(1).join(",")}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Google Map */}
       <div className="h-[50vh] w-full">
@@ -630,14 +723,14 @@ export default function LocationSearch({
             }}
           >
             {/* POI Markers */}
-            {/* {poiMarkers.map((poi) => (
+            {poiMarkers.map((poi) => (
               <Marker
                 key={poi.id}
                 position={{ lat: poi.lat, lng: poi.lon }}
                 {...(customIcon && { icon: customIcon })}
                 onClick={() => handlePoiClick(poi)}
               />
-            ))} */}
+            ))}
 
             {/* Update map position when location changes */}
             {selectedLocation && (
@@ -793,7 +886,7 @@ export default function LocationSearch({
                   )}
 
                   {/* Show promos from barData */}
-                  {/* {selectedPlace.place_id &&
+                  {selectedPlace.place_id &&
                     barData
                       .find((b) => b.id.toString() === selectedPlace.place_id)
                       ?.promos?.map((promo, idx) => (
@@ -803,11 +896,11 @@ export default function LocationSearch({
                         >
                           {promo.toLowerCase()}
                         </span>
-                      ))} */}
+                      ))}
                 </div>
 
                 {/* Additional info */}
-                {/* <p className="mb-1 text-[10px] text-white/70">
+                <p className="mb-1 text-[10px] text-white/70">
                   {selectedPlace.address?.phone &&
                     `Phone: ${selectedPlace.address.phone}`}
                   {selectedPlace.place_id &&
@@ -815,7 +908,7 @@ export default function LocationSearch({
                       (b) => b.id.toString() === selectedPlace.place_id,
                     )?.closeTime &&
                     ` | Closes: ${barData.find((b) => b.id.toString() === selectedPlace.place_id)?.closeTime}`}
-                </p> */}
+                </p>
               </div>
             </div>
 
@@ -829,27 +922,27 @@ export default function LocationSearch({
                 </li>
                 <li>
                   <strong>Rating:</strong>{" "}
-                  {/* {barData.find(
+                  {barData.find(
                     (b) => b.id.toString() === selectedPlace.place_id,
-                  )?.rating || "N/A"} */}
+                  )?.rating || "N/A"}
                 </li>
                 <li>
                   <strong>Reviews:</strong>{" "}
-                  {/* {barData.find(
+                  {barData.find(
                     (b) => b.id.toString() === selectedPlace.place_id,
-                  )?.reviews || "N/A"} */}
+                  )?.reviews || "N/A"}
                 </li>
                 <li>
                   <strong>Open Time:</strong>{" "}
-                  {/* {barData.find(
+                  {barData.find(
                     (b) => b.id.toString() === selectedPlace.place_id,
-                  )?.openTime || "N/A"} */}
+                  )?.openTime || "N/A"}
                 </li>
                 <li>
                   <strong>Close Time:</strong>{" "}
-                  {/* {barData.find(
+                  {barData.find(
                     (b) => b.id.toString() === selectedPlace.place_id,
-                  )?.closeTime || "N/A"} */}
+                  )?.closeTime || "N/A"}
                 </li>
               </ul>
             </div>
@@ -860,7 +953,7 @@ export default function LocationSearch({
                 Nearby Locations
               </h3>
               <div className="mt-2 flex gap-4 overflow-x-auto">
-                {/* {barData.map((bar) => (
+                {barData.map((bar) => (
                   <div
                     key={bar.id}
                     className="min-w-[200px] flex-shrink-0 rounded-lg bg-white p-3 shadow-md"
@@ -875,7 +968,7 @@ export default function LocationSearch({
                     </h4>
                     <p className="text-xs text-gray-600">{bar.address}</p>
                   </div>
-                ))} */}
+                ))}
               </div>
             </div>
           </div>

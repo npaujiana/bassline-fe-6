@@ -3,7 +3,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import axiosInstance from "../../../utils/api";
 
-export const authOptions = {
+// Changed from export to const - this is now a local constant, not an export
+const authOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
@@ -103,20 +104,8 @@ export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET || "your-secret-key",
 };
 
+// Create the handler with our authOptions
 const handler = NextAuth(authOptions);
 
-// Type validation utility types
-type Diff<T extends object> = {
-  [K in keyof T]?: Function;
-};
-
-function checkFields<T extends object>(_fields: T): void {}
-
-// Validate that exported handlers conform to expected HTTP method handlers
-checkFields<Diff<{
-  GET?: typeof handler;
-  POST?: typeof handler;
-  OPTIONS?: typeof handler;
-}>>({ GET: handler, POST: handler, OPTIONS: handler });
-
+// Only export the handler functions as GET and POST
 export { handler as GET, handler as POST };
