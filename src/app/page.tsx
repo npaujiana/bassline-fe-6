@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -18,64 +19,7 @@ interface PlaceResult {
   description?: string;
 }
 
-// Popular Indonesian destinations data
-const popularPlaces: PlaceResult[] = [
-  {
-    place_id: "monas1",
-    lat: "-6.1754",
-    lon: "106.8272",
-    display_name: "Monumen Nasional, Jakarta, Indonesia",
-    category: "Monument",
-    rating: 4.6,
-    open_hours: "08:00 - 17:00",
-    image_url: "/images/monas.jpg",
-    description: "132m tall tower symbolizing Indonesia's struggle for independence"
-  },
-  {
-    place_id: "kuta1",
-    lat: "-8.7179",
-    lon: "115.1707",
-    display_name: "Pantai Kuta, Bali, Indonesia",
-    category: "Beach",
-    rating: 4.5,
-    open_hours: "24 hours",
-    image_url: "/images/kuta.jpg",
-    description: "Popular sandy beach with surfing, sunsets and vibrant nightlife"
-  },
-  {
-    place_id: "malioboro1",
-    lat: "-7.7956",
-    lon: "110.3695",
-    display_name: "Jalan Malioboro, Yogyakarta, Indonesia",
-    category: "Shopping",
-    rating: 4.4,
-    open_hours: "09:00 - 21:00",
-    image_url: "/images/malioboro.jpg",
-    description: "Iconic shopping street with traditional goods and street food"
-  },
-  {
-    place_id: "borobudur1",
-    lat: "-7.6079",
-    lon: "110.2038",
-    display_name: "Candi Borobudur, Magelang, Jawa Tengah, Indonesia",
-    category: "Temple",
-    rating: 4.8,
-    open_hours: "06:00 - 17:00",
-    image_url: "/images/borobudur.jpg",
-    description: "9th-century Mahayana Buddhist temple and UNESCO World Heritage Site"
-  },
-  {
-    place_id: "bromo1",
-    lat: "-7.9425",
-    lon: "112.9530",
-    display_name: "Gunung Bromo, Jawa Timur, Indonesia",
-    category: "Mountain",
-    rating: 4.7,
-    open_hours: "Sunrise hours best for visiting",
-    image_url: "/images/bromo.jpg",
-    description: "Active volcano in East Java with spectacular sunrise views"
-  }
-];
+
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -85,10 +29,19 @@ export default function Home() {
   const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/login");
+    }
+  }, [router]);
+
   // Handle form submit
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      setIsSearching(true);
+      await searchPlaces(searchQuery);
       router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
     }
   };
@@ -98,45 +51,80 @@ export default function Home() {
     const value = e.target.value;
     setSearchQuery(value);
 
-    if (value.length > 2) {
+    if (value.length > 3) {
       setIsSearching(true);
-      void searchPlaces(value);
+      void searchAutocomplete(value);
     } else {
       setSearchResults([]);
       setShowDropdown(false);
     }
   };
 
-  // Search places dengan kombinasi dummy data dan Nominatim API
-  const searchPlaces = async (query: string) => {
+  // Search autocomplete using Swagger API
+  const searchAutocomplete = async (query: string) => {
     try {
-      // Check if query matches any popular places first
-      const lowerQuery = query.toLowerCase();
-      const matchingPopularPlaces = popularPlaces.filter(place => 
-        place.display_name.toLowerCase().includes(lowerQuery)
-      );
-      
-      if (matchingPopularPlaces.length > 0) {
-        setSearchResults(matchingPopularPlaces);
-        setShowDropdown(true);
-        setIsSearching(false);
-        return;
-      }
-      
-      // If no matches in dummy data, use API
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=id`,
-      );
-      const data = (await response.json()) as PlaceResult[];
+      const api = (await import('src/app/utils/api')).default;
+      const response = await api.get('/api/google-maps/places/autocomplete/', {
+        params: {
+          input: query,
+          location: '37.7749,-122.4194',
+          radius: 1000,
+          types: 'establishment',
+          language: 'en',
+        },
+      });
+      const data = response.data;
 
-      if (data && data.length > 0) {
-        // Enhance API results with some additional info
-        const enhancedData = data.map(place => ({
-          ...place,
-          category: "Location",
+      if (data && data.predictions && data.predictions.length > 0) {
+        // Transform API results to PlaceResult format
+        const enhancedData: PlaceResult[] = data.predictions.map((prediction: any) => ({
+          place_id: prediction.place_id,
+          lat: "", // lat/lon not provided in autocomplete response, can be fetched separately if needed
+          lon: "",
+          display_name: prediction.description,
+          category: prediction.types?.[0] || "establishment",
           rating: 4.0,
           open_hours: "Varies",
-          description: `Location in ${place.display_name.split(',').slice(-2)[0] || 'Indonesia'}`
+          description: `Location in ${prediction.description.split(',').slice(-2)[0] || 'Indonesia'}`
+        }));
+        setSearchResults(enhancedData);
+        setShowDropdown(true);
+      } else {
+        setSearchResults([]);
+        setShowDropdown(false);
+      }
+      setIsSearching(false);
+    } catch (error) {
+      console.error("Error searching autocomplete:", error);
+      setSearchResults([]);
+      setShowDropdown(false);
+      setIsSearching(false);
+    }
+  };
+
+  // Search places using Swagger API
+  const searchPlaces = async (query: string) => {
+    try {
+      const api = (await import('src/app/utils/api')).default;
+      const response = await api.get('/api/google-maps/places/search/', {
+        params: {
+          query: query,
+        },
+      });
+      const data = response.data;
+
+      if (data && data.results && data.results.length > 0) {
+        // Transform API results to PlaceResult format
+        const enhancedData: PlaceResult[] = data.results.map((item: any) => ({
+          place_id: item.id.toString(),
+          lat: item.latitude.toString(),
+          lon: item.longitude.toString(),
+          display_name: item.name,
+          category: item.category,
+          rating: item.rating,
+          open_hours: item.open_hours,
+          image_url: item.image_url,
+          description: item.description,
         }));
         setSearchResults(enhancedData);
         setShowDropdown(true);

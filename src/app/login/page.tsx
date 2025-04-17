@@ -1,47 +1,70 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const registered = searchParams.get('registered');
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Use the auth context
+  const { login } = useAuth();
+
+  // Menampilkan pesan sukses jika user berhasil register
+  useEffect(() => {
+    if (registered === 'true') {
+      setSuccess("Registrasi berhasil! Silakan login dengan akun baru Anda.");
+    }
+  }, [registered]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
-
+    setSuccess("");
+    
     if (!username || !password) {
-      setError("Username and password are required");
-      setIsLoading(false);
+      setError("Email dan password wajib diisi");
       return;
     }
 
+    setIsLoading(true);
+
     try {
-      console.log("Starting login process...");
+      // Use the login function from AuthContext
+      const result = await login(username, password);
       
-      // Use redirect: true for a full page navigation after login
-      const result = await signIn("credentials", {
-        username,
-        password,
-        redirect: true,
-        callbackUrl: "/"
-      });
-      
-      // This code will only run if redirect is false
-      console.log("Sign in result:", result);
-      
-      if (result?.error) {
-        setError(result.error);
+      if (!result.success) {
+        setError(result.error || "Login gagal. Periksa email dan password Anda.");
+      } else {
+        // Redirect will be handled by the AuthContext
+        router.push("/");
+        router.refresh();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Login error:", err);
-      setError("An error occurred during login. Please try again.");
+      setError("Terjadi kesalahan saat login. Silakan coba lagi.");
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      // This would need to be implemented in the AuthContext if needed
+      setError("Google sign-in belum diimplementasikan");
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Google sign in error:", error);
+      setError("Terjadi kesalahan saat login dengan Google. Silakan coba lagi.");
       setIsLoading(false);
     }
   };
@@ -70,6 +93,21 @@ export default function Login() {
                 </div>
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-white">{error}</h3>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {success && (
+            <div className="relative z-10 rounded-md bg-green-600/80 p-4 border border-green-400/50">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-white">{success}</h3>
                 </div>
               </div>
             </div>
@@ -126,6 +164,27 @@ export default function Login() {
                 {isLoading ? "Signing in..." : "Sign in"}
               </button>
             </div>
+
+            <div className="relative flex items-center">
+              <div className="flex-grow border-t border-gray-400/30"></div>
+              <span className="flex-shrink mx-4 text-gray-300 text-sm">Or continue with</span>
+              <div className="flex-grow border-t border-gray-400/30"></div>
+            </div>
+
+            <div>
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={isLoading}
+                className="group relative flex w-full justify-center items-center rounded-md border border-white/30 bg-white/20 hover:bg-white/30 px-4 py-2.5 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300 ease-in-out transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" fill="#FFFFFF"/>
+                </svg>
+                Google
+              </button>
+            </div>
+
             <p className="mt-4 text-center text-sm text-gray-300">
               No account?{' '}
               <Link

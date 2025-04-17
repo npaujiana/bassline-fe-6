@@ -2,6 +2,8 @@ import "~/styles/globals.css";
 
 import { type Metadata, type Viewport } from "next";
 import { Inter } from "next/font/google";
+import AuthSessionProvider from "./components/AuthSessionProvider";
+import { AuthProvider } from "./contexts/AuthContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,7 +27,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen bg-white relative overflow-x-hidden`} suppressHydrationWarning>
-        {children}
+        <AuthSessionProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );

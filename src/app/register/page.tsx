@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import axiosInstance from "../../lib/axios";
+import axiosInstance, { registerUser } from "../utils/api";
 
 export default function Register() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -17,31 +19,53 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
+    // Validasi form
     if (!username || !email || !password) {
-      setError("All fields are required");
+      setError("Username, Email, dan Password harus diisi");
       return;
     }
 
     setIsLoading(true);
 
-    try {
-      const response = await axiosInstance.post('/api/register', {
+      try {
+      // Panggil API register dengan fungsi khusus yang menggunakan header spesifik
+      const response = await registerUser({
         username,
         email,
-        password
+        password,
+        first_name: firstName,
+        last_name: lastName,
       });
 
-      if (response.status === 201) {
-        router.push('/login');
+      if (response.status === 201 || response.status === 200) {
+        // Registrasi berhasil, arahkan ke halaman login
+        router.push('/login?registered=true');
       } else {
-        setError("Registration failed. Please try again.");
+        setError("Registrasi gagal. Silahkan coba lagi.");
       }
     } catch (error: any) {
       console.error('Registration error:', error);
       if (error.response) {
-        setError(error.response.data?.message || 'An error occurred during registration');
+        try {
+          const data = typeof error.response.data === 'string' ? JSON.parse(error.response.data) : error.response.data;
+          if (data?.username) {
+            setError(`Username: ${data.username.join(', ')}`);
+          } else if (data?.email) {
+            setError(`Email: ${data.email.join(', ')}`);
+          } else if (data?.password) {
+            setError(`Password: ${data.password.join(', ')}`);
+          } else if (data?.message) {
+            setError(data.message);
+          } else if (data?.error) {
+            setError(data.error);
+          } else {
+            setError('Terjadi kesalahan saat registrasi');
+          }
+        } catch (parseError) {
+          setError('Terjadi kesalahan saat registrasi');
+        }
       } else {
-        setError('Network error occurred. Please try again later.');
+        setError('Terjadi kesalahan jaringan. Silahkan coba lagi nanti.');
       }
     } finally {
       setIsLoading(false);
@@ -81,54 +105,84 @@ export default function Register() {
 
           <form className="mt-8 space-y-6 relative z-10" onSubmit={handleSubmit}>
             <div className="rounded-md shadow-sm space-y-px">
-              <div>
-                <label htmlFor="username" className="sr-only">
-                  Username
-                </label>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  autoComplete="username"
-                  required
-                  className="relative block w-full appearance-none rounded-md border border-white/30 bg-white px-3 py-2.5 text-black placeholder-gray-400 focus:z-10 focus:border-red-400 focus:outline-none focus:ring-red-400 sm:text-sm transition duration-300 ease-in-out"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
-              <div className="pt-4">
-                <label htmlFor="email" className="sr-only">
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="relative block w-full appearance-none rounded-md border border-white/30 bg-white px-3 py-2.5 text-black placeholder-gray-400 focus:z-10 focus:border-red-400 focus:outline-none focus:ring-red-400 sm:text-sm transition duration-300 ease-in-out"
-                  placeholder="Email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="pt-4">
-                <label htmlFor="password" className="sr-only">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  className="relative block w-full appearance-none rounded-md border border-white/30 bg-white px-3 py-2.5 text-black placeholder-gray-400 focus:z-10 focus:border-red-400 focus:outline-none focus:ring-red-400 sm:text-sm transition duration-300 ease-in-out"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
+            <div className="pt-4">
+              <label htmlFor="firstName" className="sr-only">
+                First Name
+              </label>
+              <input
+                id="firstName"
+                name="firstName"
+                type="text"
+                autoComplete="given-name"
+                className="relative block w-full appearance-none rounded-md border border-white/30 bg-white px-3 py-2.5 text-black placeholder-gray-400 focus:z-10 focus:border-red-400 focus:outline-none focus:ring-red-400 sm:text-sm transition duration-300 ease-in-out"
+                placeholder="First Name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+            </div>
+            <div className="pt-4">
+              <label htmlFor="lastName" className="sr-only">
+                Last Name
+              </label>
+              <input
+                id="lastName"
+                name="lastName"
+                type="text"
+                autoComplete="family-name"
+                className="relative block w-full appearance-none rounded-md border border-white/30 bg-white px-3 py-2.5 text-black placeholder-gray-400 focus:z-10 focus:border-red-400 focus:outline-none focus:ring-red-400 sm:text-sm transition duration-300 ease-in-out"
+                placeholder="Last Name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </div>
+            <div className="pt-4">
+              <label htmlFor="username" className="sr-only">
+                Username
+              </label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                autoComplete="username"
+                required
+                className="relative block w-full appearance-none rounded-md border border-white/30 bg-white px-3 py-2.5 text-black placeholder-gray-400 focus:z-10 focus:border-red-400 focus:outline-none focus:ring-red-400 sm:text-sm transition duration-300 ease-in-out"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            <div className="pt-4">
+              <label htmlFor="email" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="relative block w-full appearance-none rounded-md border border-white/30 bg-white px-3 py-2.5 text-black placeholder-gray-400 focus:z-10 focus:border-red-400 focus:outline-none focus:ring-red-400 sm:text-sm transition duration-300 ease-in-out"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="pt-4">
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                required
+                className="relative block w-full appearance-none rounded-md border border-white/30 bg-white px-3 py-2.5 text-black placeholder-gray-400 focus:z-10 focus:border-red-400 focus:outline-none focus:ring-red-400 sm:text-sm transition duration-300 ease-in-out"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
             </div>
 
             <div>
