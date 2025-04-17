@@ -94,6 +94,9 @@ export default function MapView({ searchQuery }: MapViewProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
+  // State for user's current location
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
   // Search for place when component mounts or search query changes
   useEffect(() => {
     if (!searchQuery) return;
@@ -129,6 +132,38 @@ export default function MapView({ searchQuery }: MapViewProps) {
     return () => clearInterval(interval);
   }, [placeInfo]);
 
+  // Function to get user's current location
+  const handleMyLocationClick = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        setPlaceInfo({
+          name: "My Location",
+          address: "Current location",
+          lat: latitude,
+          lng: longitude,
+          photos: []
+        });
+      },
+      (error) => {
+        alert("Unable to retrieve your location.");
+        console.error(error);
+      }
+    );
+  };
+
+  // Determine map center coordinates: user location if available, else placeInfo
+  const centerLat = userLocation ? userLocation.lat : placeInfo?.lat ?? -6.2088;
+  const centerLng = userLocation ? userLocation.lng : placeInfo?.lng ?? 106.8456;
+
+  // URL for static map using OpenStreetMap
+  const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${centerLng - 0.01}%2C${centerLat - 0.01}%2C${centerLng + 0.01}%2C${centerLat + 0.01}&layer=mapnik&marker=${centerLat}%2C${centerLng}`;
+
   // If loading, show loading indicator
   if (isLoading) {
     return (
@@ -153,9 +188,6 @@ export default function MapView({ searchQuery }: MapViewProps) {
     );
   }
 
-  // URL for static map using OpenStreetMap
-  const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${placeInfo.lng - 0.01}%2C${placeInfo.lat - 0.01}%2C${placeInfo.lng + 0.01}%2C${placeInfo.lat + 0.01}&amp;layer=mapnik&amp;marker=${placeInfo.lat}%2C${placeInfo.lng}`;
-
   return (
     <div className="fixed inset-0 flex flex-col">
       {/* Map section - takes 60% of screen height, full width */}
@@ -177,6 +209,18 @@ export default function MapView({ searchQuery }: MapViewProps) {
             <div className="h-2 w-2 rounded-full bg-white"></div>
           </div>
         </div>
+
+        {/* My Location button */}
+        <button
+          onClick={handleMyLocationClick}
+          className="absolute bottom-4 right-4 bg-red-600 text-white rounded-full p-3 shadow-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
+          aria-label="My Location"
+          title="My Location"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
       </div>
 
       {/* Details section - takes remaining 40% of screen with bottom sheet style */}
