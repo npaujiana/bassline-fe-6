@@ -12,7 +12,7 @@ const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
 
 function MapContent() {
   const searchParams = useSearchParams();
-  const query = searchParams.get("q");
+  const query = searchParams?.get("q");
   const [isLoading, setIsLoading] = useState(true);
   const [isEnglish, setIsEnglish] = useState(false);
 
