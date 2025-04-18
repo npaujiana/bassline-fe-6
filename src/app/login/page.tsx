@@ -7,8 +7,8 @@ import { useAuth } from "../contexts/AuthContext";
 
 function LoginContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const registered = searchParams.get('registered');
+  // const searchParams = useSearchParams();
+  const registered = "false";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -20,7 +20,7 @@ function LoginContent() {
 
   // Menampilkan pesan sukses jika user berhasil register
   useEffect(() => {
-    if (registered === 'true') {
+    if (registered === "false") {
       setSuccess("Registrasi berhasil! Silakan login dengan akun baru Anda.");
     }
   }, [registered]);
