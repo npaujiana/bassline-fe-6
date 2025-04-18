@@ -51,7 +51,7 @@ export default function Home() {
     const value = e.target.value;
     setSearchQuery(value);
 
-    if (value.length > 3) {
+    if (value.length > 1) {
       setIsSearching(true);
       void searchAutocomplete(value);
     } else {
@@ -64,13 +64,9 @@ export default function Home() {
   const searchAutocomplete = async (query: string) => {
     try {
       const api = (await import('src/app/utils/api')).default;
-      const response = await api.get('/api/google-maps/places/autocomplete/', {
+      const response = await api.get('/api/google-maps/places/autocomplete', {
         params: {
           input: query,
-          location: '37.7749,-122.4194',
-          radius: 1000,
-          types: 'establishment',
-          language: 'en',
         },
       });
       const data = response.data;
