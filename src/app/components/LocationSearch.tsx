@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   GoogleMap,
   useJsApiLoader,
@@ -26,89 +26,81 @@ interface LocationSearchProps {
   initialQuery?: string;
 }
 
-  // Type for search results
-  interface PlaceResult {
-    place_id: string;
-    lat: string;
-    lon: string;
-    display_name: string;
-    type?: string;
-    category?: string;
-    address?: Record<string, string>;
-    image_url?: string;
-  }
+// Type for search results
+interface PlaceResult {
+  place_id: string;
+  lat: string;
+  lon: string;
+  display_name: string;
+  type?: string;
+  category?: string;
+  address?: Record<string, string>;
+  image_url?: string;
+}
 
-  // Default map center (San Francisco, USA)
+// Default map center (San Francisco, USA)
 const defaultCenter: [number, number] = [37.7749, -122.4194];
 
-  // Filter categories data
-  const categories = [
-    { id: "location_proximity", name: "Location & Proximity", icon: "📍" },
-    { id: "closing_time", name: "Closing Time", icon: "⏰" },
-    { id: "venue_type", name: "Venue Type", icon: "🏢" },
-    { id: "music_genre", name: "Music Genre", icon: "🎵" },
-    { id: "ambiance_crowd", name: "Ambiance & Crowd Density", icon: "🎉" },
-    { id: "price_range", name: "Price Range", icon: "💲" },
-    { id: "dress_code", name: "Dress Code / Vibe", icon: "👗" },
-    { id: "crowd_social", name: "Crowd & Social Scene", icon: "🧑‍🤝‍🧑" },
-    { id: "real_time", name: "Real-Time Data & Practical Filters", icon: "⏳" },
-  ];
+// Filter categories data
+const categories = [
+  { id: "location_proximity", name: "Location & Proximity", icon: "📍" },
+  { id: "closing_time", name: "Closing Time", icon: "⏰" },
+  { id: "venue_type", name: "Venue Type", icon: "🏢" },
+  { id: "music_genre", name: "Music Genre", icon: "🎵" },
+  { id: "ambiance_crowd", name: "Ambiance & Crowd Density", icon: "🎉" },
+  { id: "price_range", name: "Price Range", icon: "💲" },
+  { id: "dress_code", name: "Dress Code / Vibe", icon: "👗" },
+  { id: "crowd_social", name: "Crowd & Social Scene", icon: "🧑‍🤝‍🧑" },
+  { id: "real_time", name: "Real-Time Data & Practical Filters", icon: "⏳" },
+];
 
-  // Define dropdown options for each category with more specific values
-  const dropdownOptions = {
-    location_proximity: [
-      "Distance from current location",
-      "Walkability between spots",
-      "Neighborhood-based recommendations",
-    ],
-    closing_time: [
-      "Open now",
-      "Open past 2 AM",
-      "24-hour spots",
-      "Last entry time",
-    ],
-    venue_type: [
-      "Bar",
-      "Club",
-      "Lounge",
-      "After-hours spot",
-      "Late-night restaurant",
-    ],
-    music_genre: [
-      "Hip-hop / R&B",
-      "House / Techno",
-      "Jazz / Blues",
-      "Live Music / Bands",
-      "Mixed / Open format",
-    ],
-    ambiance_crowd: [
-      "Chill / Low-key",
-      "Lively but not packed",
-      "High-energy / Party vibes",
-      "Exclusive / VIP",
-    ],
-    price_range: [
-      "$ (Budget-friendly)",
-      "$$",
-      "$$$",
-    ],
-    dress_code: [
-      "Casual",
-      "Smart Casual",
-      "Dressy / Fancy",
-    ],
-    crowd_social: [
-      "LGBTQ+ friendly",
-      "College crowd",
-      "Trendy / Influencer spots",
-      "Industry / Music scene",
-    ],
-    real_time: [
-      "Live crowd updates (empty / moderate / packed)",
-      "Queue wait times",
-      "Reservations required or walk-in friendly",
-    ],
-  };
+// Define dropdown options for each category with more specific values
+const dropdownOptions = {
+  location_proximity: [
+    "Distance from current location",
+    "Walkability between spots",
+    "Neighborhood-based recommendations",
+  ],
+  closing_time: [
+    "Open now",
+    "Open past 2 AM",
+    "24-hour spots",
+    "Last entry time",
+  ],
+  venue_type: [
+    "Bar",
+    "Club",
+    "Lounge",
+    "After-hours spot",
+    "Late-night restaurant",
+  ],
+  music_genre: [
+    "Hip-hop / R&B",
+    "House / Techno",
+    "Jazz / Blues",
+    "Live Music / Bands",
+    "Mixed / Open format",
+  ],
+  ambiance_crowd: [
+    "Chill / Low-key",
+    "Lively but not packed",
+    "High-energy / Party vibes",
+    "Exclusive / VIP",
+  ],
+  price_range: ["$ (Budget-friendly)", "$$", "$$$"],
+  dress_code: ["Casual", "Smart Casual", "Dressy / Fancy"],
+  crowd_social: [
+    "LGBTQ+ friendly",
+    "College crowd",
+    "Trendy / Influencer spots",
+    "Industry / Music scene",
+  ],
+  real_time: [
+    "Live crowd updates (empty / moderate / packed)",
+    "Queue wait times",
+    "Reservations required or walk-in friendly",
+  ],
+};
 
 // Sample bar data
 const barData = [
@@ -127,8 +119,9 @@ const barData = [
     openTime: "5:00 PM",
     closeTime: "00:00 AM",
     phone: "+16693339463",
-    image: "https://lh3.googleusercontent.com/p/AF1QipMoS60Pk6Mx8r52E0_S2a44U6hHsXsbUOhbmWuQ=w408-h306-k-no",
-    promos: ["Happy Hour", "Live Music"]
+    image:
+      "https://lh3.googleusercontent.com/p/AF1QipMoS60Pk6Mx8r52E0_S2a44U6hHsXsbUOhbmWuQ=w408-h306-k-no",
+    promos: ["Happy Hour", "Live Music"],
   },
   {
     id: 2,
@@ -146,14 +139,17 @@ const barData = [
     closeTime: "3:00 AM",
     phone: "555-5678",
     image: "https://via.placeholder.com/400x300?text=Rooftop+Lounge",
-    promos: ["VIP Tables", "Guest DJs"]
-  }
+    promos: ["VIP Tables", "Guest DJs"],
+  },
 ];
 
 export default function LocationSearch({
   initialQuery = "",
 }: LocationSearchProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const query = searchParams?.get("q");
+
   const [searchResults, setSearchResults] = useState<PlaceResult[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<PlaceResult | null>(null);
@@ -205,16 +201,7 @@ export default function LocationSearch({
     };
   }, [isLoaded]);
 
-  const validCenter = useMemo(() => {
-    if (
-      selectedLocation &&
-      typeof selectedLocation[0] === "number" &&
-      typeof selectedLocation[1] === "number"
-    ) {
-      return { lat: selectedLocation[0], lng: selectedLocation[1] };
-    }
-    return { lat: defaultCenter[0], lng: defaultCenter[1] };
-  }, [selectedLocation]);
+  const validCenter = selectedLocation || defaultCenter;
 
   const handleCategoryFilter = (categoryId: string, event: React.MouseEvent<HTMLButtonElement>) => {
     const buttonRect = event.currentTarget.getBoundingClientRect();
@@ -282,6 +269,13 @@ export default function LocationSearch({
   useEffect(() => {
     applyFilters(selectedFilters);
   }, [applyFilters, selectedFilters]);
+
+  useEffect(() => {
+    if (query) {
+      setSearchQuery(query);
+      searchPlaces(query);
+    }
+  }, [query]);
 
   const handleSelectPlace = useCallback((place: PlaceResult) => {
     const lat = parseFloat(place.lat);
@@ -391,10 +385,32 @@ export default function LocationSearch({
     }
   };
 
-  const handleAutocompleteSelect = (place: PlaceResult) => {
+  const handleAutocompleteSelect = async (place: PlaceResult) => {
     setSearchQuery(place.display_name?.split(",")[0] ?? "");
-    handleSelectPlace(place);
     setShowAutocomplete(false);
+
+    try {
+      const api = (await import("src/app/utils/api")).default;
+      const response = await api.get("/api/google-maps/place-details/", {
+        params: {
+          place_id: place.place_id,
+        },
+      });
+
+      const data = response.data;
+
+      if (data) {
+        const lat = parseFloat(data.latitude);
+        const lon = parseFloat(data.longitude);
+
+        // Update map center and selected location
+        setSelectedLocation([lat, lon]);
+        setMapZoom(17);
+        setShowInfoWindow(true);
+      }
+    } catch (error) {
+      console.error("Error fetching place details:", error);
+    }
   };
 
   const handlePoiClick = (poi: typeof barData[0]) => {
@@ -458,7 +474,7 @@ export default function LocationSearch({
 
   return (
     <div className="relative w-full">
-      {/* Search bar at the top */} 
+      {/* Search bar at the top */}
       <div className="sticky top-0 z-[999] h-[11vh] bg-white shadow-md mb">
         <form
           onSubmit={handleSearchSubmit}
@@ -492,25 +508,29 @@ export default function LocationSearch({
             </button>
           </div>
         </form>
-      {/* My Location Button */}
-      <button
-        onClick={handleMyLocationClick}
-        aria-label="My Location"
-        className="fixed bottom-6 right-6 z-[9999] bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-colors duration-300 flex items-center justify-center"
-        title="Go to My Location"
-        type="button"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 text-blue-600"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
+        {/* My Location Button */}
+        <button
+          onClick={handleMyLocationClick}
+          aria-label="My Location"
+          className="fixed bottom-6 right-6 z-[9999] bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-colors duration-300 flex items-center justify-center"
+          title="Go to My Location"
+          type="button"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </button>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 text-blue-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </button>
       </div>
 
       {/* Autocomplete dropdown */}
@@ -537,8 +557,7 @@ export default function LocationSearch({
       <div className="h-[50vh] w-full">
         {isLoaded && (
           <GoogleMap
-            mapContainerStyle={{ width: "100%", height: "100%" }}
-            center={validCenter}
+            mapContainerStyle={{ width: "100%", height: "100%" }}  
             zoom={mapZoom}
             onLoad={(map) => {
               mapRef.current = map;
@@ -555,13 +574,18 @@ export default function LocationSearch({
             ))}
 
             {/* Marker for selected search location */}
-            {selectedPlace && selectedPlace.place_id !== "my-location" && selectedLocation && (
-              <Marker
-                position={{ lat: selectedLocation[0], lng: selectedLocation[1] }}
-                {...(customIcon && { icon: customIcon })}
-                onClick={() => setShowInfoWindow(true)}
-              />
-            )}
+            {selectedPlace &&
+              selectedPlace.place_id !== "my-location" &&
+              selectedLocation && (
+                <Marker
+                  position={{
+                    lat: selectedLocation[0],
+                    lng: selectedLocation[1],
+                  }}
+                  {...(customIcon && { icon: customIcon })}
+                  onClick={() => setShowInfoWindow(true)}
+                />
+              )}
 
             {/* Update map position when location changes */}
             {selectedLocation && (
@@ -570,80 +594,81 @@ export default function LocationSearch({
           </GoogleMap>
         )}
         {/* Category Filter */}
-          <div className="mx-4 mt-3 overflow-x-auto">
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              {categories.map((category) => (
-                <div key={category.id} className="flex-shrink-0">
-                  <button
-                    onClick={(e) => handleCategoryFilter(category.id, e)}
-                    className={`flex items-center justify-between rounded-lg border px-3 py-2 ${
-                      selectedCategory === category.id
-                        ? "border-red-500 bg-red-50 text-red-700"
-                        : "border-gray-300 bg-white text-gray-700"
-                    }`}
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <span className="flex items-center">
-                      <span className="mr-1">{category.icon}</span>
+        <div className="mx-4 mt-3 overflow-x-auto">
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            {categories.map((category) => (
+              <div key={category.id} className="flex-shrink-0">
+                <button
+                  onClick={(e) => handleCategoryFilter(category.id, e)}
+                  className={`flex items-center justify-between rounded-lg border px-3 py-2 ${
+                    selectedCategory === category.id
+                      ? "border-red-500 bg-red-50 text-red-700"
+                      : "border-gray-300 bg-white text-gray-700"
+                  }`}
+                  style={{ whiteSpace: "nowrap" }}
+                >
+                  <span className="flex items-center">
+                    <span className="mr-1">{category.icon}</span>
                     <span className="text-sm font-medium">{category.name}</span>
-                    </span>
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </button>
-                  {showDropdown === category.id && (
-                    <div
-                      ref={dropdownRef}
-                      className="absolute z-[9999] mt-1 rounded-lg border border-gray-200 bg-white shadow-lg"
-                      style={{
+                  </span>
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+                {showDropdown === category.id && (
+                  <div
+                    ref={dropdownRef}
+                    className="absolute z-[9999] mt-1 rounded-lg border border-gray-200 bg-white shadow-lg"
+                    style={{
                       top: dropdownPosition?.top || 0,
                       left: dropdownPosition?.left || 0,
                       maxHeight: "150px",
                       overflowY: "auto",
                       width: "200px",
                       position: "absolute",
-                      }}
-                    >
-                      {dropdownOptions[
+                    }}
+                  >
+                    {dropdownOptions[
                       category.id as keyof typeof dropdownOptions
-                      ].map((option) => (
-                        <label
-                          key={option}
-                          className="flex cursor-pointer items-center px-3 py-2 hover:bg-gray-50"
-                        >
-                          <input
-                            type="checkbox"
-                            className="mr-2 h-3 w-3 rounded border-gray-300 text-red-600 focus:ring-red-500"
-                            checked={
-                              (selectedFilters[
+                    ].map((option) => (
+                      <label
+                        key={option}
+                        className="flex cursor-pointer items-center px-3 py-2 hover:bg-gray-50"
+                      >
+                        <input
+                          type="checkbox"
+                          className="mr-2 h-3 w-3 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                          checked={
+                            (
+                              selectedFilters[
                                 category.id as keyof typeof selectedFilters
                               ] || []
                             ).includes(option)
-                            }
-                            onChange={() =>
-                              handleFilterOptionSelect(category.id, option)
-                            }
-                          />
-                          <span className="text-xs">{option}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                          }
+                          onChange={() =>
+                            handleFilterOptionSelect(category.id, option)
+                          }
+                        />
+                        <span className="text-xs">{option}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
+        </div>
       </div>
 
       {/* Bottom Card - Location Info */}
@@ -701,18 +726,17 @@ export default function LocationSearch({
                   )}
 
                   {/* Show promos from barData */}
-                    {selectedPlace.place_id &&
+                  {selectedPlace.place_id &&
                     barData
                       .find((b) => b.id.toString() === selectedPlace.place_id)
                       ?.promos?.map((promo: string, idx: number) => (
-                      <span
-                        key={idx}
-                        className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] text-white/90"
-                      >
-                        {promo.toLowerCase()}
-                      </span>
+                        <span
+                          key={idx}
+                          className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] text-white/90"
+                        >
+                          {promo.toLowerCase()}
+                        </span>
                       ))}
-
                 </div>
 
                 {/* Additional info */}
@@ -723,7 +747,9 @@ export default function LocationSearch({
                     barData.find(
                       (b) => b.id.toString() === selectedPlace.place_id,
                     )?.closeTime &&
-                    ` | Closes: ${barData.find((b) => b.id.toString() === selectedPlace.place_id)?.closeTime}`}
+                    ` | Closes: ${
+                      barData.find((b) => b.id.toString() === selectedPlace.place_id)?.closeTime
+                    }`}
                 </p>
               </div>
             </div>
