@@ -4,6 +4,7 @@ import { type Metadata, type Viewport } from "next";
 import { Inter } from "next/font/google";
 import AuthSessionProvider from "./components/AuthSessionProvider";
 import { AuthProvider } from "./contexts/AuthContext";
+import Navbar from "./components/navbar";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body className={`${inter.className} min-h-screen bg-white relative overflow-x-hidden`} suppressHydrationWarning>
         <AuthSessionProvider>
           <AuthProvider>
+            <Navbar />
             {children}
           </AuthProvider>
         </AuthSessionProvider>
