@@ -7,8 +7,8 @@ import dynamic from "next/dynamic";
 import Loading from "../components/Loading";
 // import Navbar from "../components/navbar";
 
-// Importar MapView de forma dinámica con SSR desactivado
-// const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
+// Import MapView dynamically with SSR disabled
+const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
 
 function MapContent() {
   const searchParams = useSearchParams();
@@ -48,7 +48,7 @@ function MapContent() {
               <Loading text={isEnglish ? "Loading map and location data..." : "Memuat peta dan informasi lokasi..."} />
             ) : (
               <div>
-                {/* <MapView searchQuery={decodedQuery} /> */}
+                <MapView searchQuery={decodedQuery} />
               </div>
             )}
           </div>
