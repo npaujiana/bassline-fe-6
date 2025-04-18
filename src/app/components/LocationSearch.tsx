@@ -26,89 +26,108 @@ interface LocationSearchProps {
   initialQuery?: string;
 }
 
-// Type for search results
-interface PlaceResult {
-  place_id: string;
-  lat: string;
-  lon: string;
-  display_name: string;
-  type?: string;
-  category?: string;
-  address?: Record<string, string>;
-}
+  // Type for search results
+  interface PlaceResult {
+    place_id: string;
+    lat: string;
+    lon: string;
+    display_name: string;
+    type?: string;
+    category?: string;
+    address?: Record<string, string>;
+    image_url?: string;
+  }
 
-// Default map center (New York City, USA)
-const defaultCenter: [number, number] = [40.7128, -74.006];
+  // Default map center (San Francisco, USA)
+const defaultCenter: [number, number] = [37.7749, -122.4194];
 
-// Filter categories data
-const categories = [
-  { id: "venue", name: "Venue", icon: "🏢" },
-  { id: "time", name: "Time", icon: "⏰" },
-  { id: "genre", name: "Genre", icon: "🎵" },
-];
+  // Filter categories data
+  const categories = [
+    { id: "location_proximity", name: "Location & Proximity", icon: "📍" },
+    { id: "closing_time", name: "Closing Time", icon: "⏰" },
+    { id: "venue_type", name: "Venue Type", icon: "🏢" },
+    { id: "music_genre", name: "Music Genre", icon: "🎵" },
+    { id: "ambiance_crowd", name: "Ambiance & Crowd Density", icon: "🎉" },
+    { id: "price_range", name: "Price Range", icon: "💲" },
+    { id: "dress_code", name: "Dress Code / Vibe", icon: "👗" },
+    { id: "crowd_social", name: "Crowd & Social Scene", icon: "🧑‍🤝‍🧑" },
+    { id: "real_time", name: "Real-Time Data & Practical Filters", icon: "⏳" },
+  ];
 
-// Define dropdown options for each category with more specific values
-const dropdownOptions = {
-  venue: [
-    "Bar",
-    "Pub",
-    "Lounge",
-    "Club",
-    "Restaurant",
-    "Cafe",
-    "Rooftop Bar",
-    "Hotel Bar",
-    "Speakeasy",
-  ],
-  time: [
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "1:00 PM",
-    "2:00 PM",
-    "3:00 PM",
-    "5:00 PM",
-    "6:00 PM",
-    "7:00 PM",
-    "8:00 PM",
-    "9:00 PM",
-    "10:00 PM",
-    "11:00 PM",
-    "12:00 AM",
-  ],
-  genre: [
-    "Jazz",
-    "Rock",
-    "EDM",
-    "Hip Hop",
-    "Blues",
-    "RnB",
-    "Pop",
-    "Live Music",
-    "DJ",
-    "Karaoke",
-    "Country",
-  ],
-};
+  // Define dropdown options for each category with more specific values
+  const dropdownOptions = {
+    location_proximity: [
+      "Distance from current location",
+      "Walkability between spots",
+      "Neighborhood-based recommendations",
+    ],
+    closing_time: [
+      "Open now",
+      "Open past 2 AM",
+      "24-hour spots",
+      "Last entry time",
+    ],
+    venue_type: [
+      "Bar",
+      "Club",
+      "Lounge",
+      "After-hours spot",
+      "Late-night restaurant",
+    ],
+    music_genre: [
+      "Hip-hop / R&B",
+      "House / Techno",
+      "Jazz / Blues",
+      "Live Music / Bands",
+      "Mixed / Open format",
+    ],
+    ambiance_crowd: [
+      "Chill / Low-key",
+      "Lively but not packed",
+      "High-energy / Party vibes",
+      "Exclusive / VIP",
+    ],
+    price_range: [
+      "$ (Budget-friendly)",
+      "$$",
+      "$$$",
+    ],
+    dress_code: [
+      "Casual",
+      "Smart Casual",
+      "Dressy / Fancy",
+    ],
+    crowd_social: [
+      "LGBTQ+ friendly",
+      "College crowd",
+      "Trendy / Influencer spots",
+      "Industry / Music scene",
+    ],
+    real_time: [
+      "Live crowd updates (empty / moderate / packed)",
+      "Queue wait times",
+      "Reservations required or walk-in friendly",
+    ],
+  };
 
 // Sample bar data
 const barData = [
   {
     id: 1,
-    name: "Jazz Club Downtown",
-    address: "123 Main St",
-    lat: 40.7128,
-    lon: -74.006,
+    name: "Bart Part Time",
+    address: "496 14th St, San Francisco, CA 94103, Amerika Serikat",
+    lat: 37.7679863,
+    lon: -122.4246939,
     type: "venue",
-    venueType: "Club",
+    venueType: "Bar",
     genre: "Jazz",
     musicGenre: "Jazz",
     rating: "4.5",
-    reviews: "120",
+    reviews: "173",
     openTime: "5:00 PM",
-    closeTime: "2:00 AM",
-    phone: "555-1234",
-    image: "https://via.placeholder.com/400x300?text=Jazz+Club",
+    closeTime: "00:00 AM",
+    phone: "+16693339463",
+    image: "https://lh3.googleusercontent.com/p/AF1QipMoS60Pk6Mx8r52E0_S2a44U6hHsXsbUOhbmWuQ=w408-h306-k-no",
     promos: ["Happy Hour", "Live Music"]
   },
   {
@@ -150,14 +169,21 @@ export default function LocationSearch({
   const cardZIndex = 1000;
 
   // State for category filter
-  const [selectedCategory, setSelectedCategory] = useState("venue");
+  const [selectedCategory, setSelectedCategory] = useState("location_proximity");
   const [poiMarkers, setPoiMarkers] = useState(barData.filter((bar) => bar.type === "venue"));
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({
-    venue: [],
-    time: [],
-    genre: [],
+    location_proximity: [],
+    closing_time: [],
+    venue_type: [],
+    music_genre: [],
+    ambiance_crowd: [],
+    price_range: [],
+    dress_code: [],
+    crowd_social: [],
+    real_time: [],
   });
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null);
 
   const mapRef = useRef<google.maps.Map | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -190,13 +216,21 @@ export default function LocationSearch({
     return { lat: defaultCenter[0], lng: defaultCenter[1] };
   }, [selectedLocation]);
 
-  const handleCategoryFilter = (categoryId: string) => {
+  const handleCategoryFilter = (categoryId: string, event: React.MouseEvent<HTMLButtonElement>) => {
+    const buttonRect = event.currentTarget.getBoundingClientRect();
+    const dropdownPosition = {
+      top: buttonRect.bottom + window.scrollY + 8, // Add spacing of 8px
+      left: buttonRect.left + window.scrollX,
+    };
+
     if (selectedCategory === categoryId) {
       setShowDropdown(showDropdown === categoryId ? null : categoryId);
     } else {
       setSelectedCategory(categoryId);
       setShowDropdown(categoryId);
     }
+
+    setDropdownPosition(dropdownPosition);
   };
 
   const handleFilterOptionSelect = (category: string, option: string) => {
@@ -259,7 +293,9 @@ export default function LocationSearch({
     setShowBottomCard(true);
 
     const bar = barData.find((b) => b.id.toString() === place.place_id);
-    if (bar?.image) {
+    if (place.image_url) {
+      setLocationPhotos([place.image_url]);
+    } else if (bar?.image) {
       setLocationPhotos([bar.image]);
     } else {
       setLocationPhotos([
@@ -534,97 +570,80 @@ export default function LocationSearch({
           </GoogleMap>
         )}
         {/* Category Filter */}
-        <div className="mx-4 mt-3">
-          <div className="flex items-center justify-between gap-2">
-            {categories.map((category) => (
-              <div
-                key={category.id}
-                className={`relative flex w-1/3 ${
-                  categories.indexOf(category) === 0
-                    ? "justify-start"
-                    : categories.indexOf(category) === 1
-                      ? "justify-center"
-                      : "justify-end"
-                }`}
-              >
-                <button
-                  onClick={() => handleCategoryFilter(category.id)}
-                  className={`flex w-max items-center justify-between rounded-lg border px-3 py-2 ${
-                    selectedCategory === category.id
-                      ? "border-red-500 bg-red-50 text-red-700"
-                      : "border-gray-300 bg-white text-gray-700"
-                  }`}
-                >
-                  <span className="flex items-center">
-                    <span className="mr-1">{category.icon}</span>
-                    <span className="text-sm font-medium">{category.name}</span>
-                  </span>
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
+          <div className="mx-4 mt-3 overflow-x-auto">
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              {categories.map((category) => (
+                <div key={category.id} className="flex-shrink-0">
+                  <button
+                    onClick={(e) => handleCategoryFilter(category.id, e)}
+                    className={`flex items-center justify-between rounded-lg border px-3 py-2 ${
+                      selectedCategory === category.id
+                        ? "border-red-500 bg-red-50 text-red-700"
+                        : "border-gray-300 bg-white text-gray-700"
+                    }`}
+                    style={{ whiteSpace: "nowrap" }}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-
-                {/* Only show dropdown when this specific category is selected AND showDropdown matches this category's ID */}
-                {showDropdown === category.id && (
-                  <div
-                    className="absolute top-12 z-[9999] rounded-lg border border-gray-200 bg-white shadow-lg"
-                    style={{
+                    <span className="flex items-center">
+                      <span className="mr-1">{category.icon}</span>
+                    <span className="text-sm font-medium">{category.name}</span>
+                    </span>
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                  {showDropdown === category.id && (
+                    <div
+                      ref={dropdownRef}
+                      className="absolute z-[9999] mt-1 rounded-lg border border-gray-200 bg-white shadow-lg"
+                      style={{
+                      top: dropdownPosition?.top || 0,
+                      left: dropdownPosition?.left || 0,
                       maxHeight: "150px",
                       overflowY: "auto",
-                      width: "140px",
-                      left:
-                        categories.indexOf(category) === 0
-                          ? "0"
-                          : categories.indexOf(category) === 1
-                            ? "50%"
-                            : "auto",
-                      right: categories.indexOf(category) === 2 ? "0" : "auto",
-                      transform:
-                        categories.indexOf(category) === 1
-                          ? "translateX(-50%)"
-                          : "none",
-                    }}
-                  >
-                    {dropdownOptions[
+                      width: "200px",
+                      position: "absolute",
+                      }}
+                    >
+                      {dropdownOptions[
                       category.id as keyof typeof dropdownOptions
-                    ].map((option) => (
-                      <label
-                        key={option}
-                        className="flex cursor-pointer items-center px-3 py-2 hover:bg-gray-50"
-                      >
-                        <input
-                          type="checkbox"
-                          className="mr-2 h-3 w-3 rounded border-gray-300 text-red-600 focus:ring-red-500"
-                          checked={
-                            (selectedFilters[
-                              category.id as keyof typeof selectedFilters
-                            ] || []
-                          ).includes(option)
-                          }
-                          onChange={() =>
-                            handleFilterOptionSelect(category.id, option)
-                          }
-                        />
-                        <span className="text-xs">{option}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+                      ].map((option) => (
+                        <label
+                          key={option}
+                          className="flex cursor-pointer items-center px-3 py-2 hover:bg-gray-50"
+                        >
+                          <input
+                            type="checkbox"
+                            className="mr-2 h-3 w-3 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                            checked={
+                              (selectedFilters[
+                                category.id as keyof typeof selectedFilters
+                              ] || []
+                            ).includes(option)
+                            }
+                            onChange={() =>
+                              handleFilterOptionSelect(category.id, option)
+                            }
+                          />
+                          <span className="text-xs">{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
       </div>
 
       {/* Bottom Card - Location Info */}
