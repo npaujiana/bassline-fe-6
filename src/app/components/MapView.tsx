@@ -175,6 +175,24 @@ export default function MapView({ searchQuery }: MapViewProps) {
             </Marker>
           ))}
         </MapContainer>
+        {/* My Location Button */}
+        <button
+          onClick={handleMyLocationClick}
+          aria-label="My Location"
+          className="fixed top-20 right-4 z-50 bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-colors duration-300 flex items-center justify-center"
+          title="Go to My Location"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 text-blue-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
       </div>
 
       <div className="flex-1 bg-white rounded-t-3xl -mt-6 z-10 shadow-lg overflow-y-auto p-5">
