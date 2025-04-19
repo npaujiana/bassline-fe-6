@@ -16,7 +16,16 @@ function LoginContent() {
   const [isLoading, setIsLoading] = useState(false);
   
   // Use the auth context
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
+
+  // Check if user is already logged in and redirect to home page
+  useEffect(() => {
+    // Check for access token in localStorage
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken || isAuthenticated) {
+      router.push("/");
+    }
+  }, [isAuthenticated, router]);
 
   // Menampilkan pesan sukses jika user berhasil register
   useEffect(() => {
