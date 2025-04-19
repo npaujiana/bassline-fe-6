@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   GoogleMap,
   useJsApiLoader,
-  Marker,
   InfoWindow,
 } from "@react-google-maps/api";
 
@@ -187,6 +186,7 @@ export default function LocationSearch({
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries: ["marker"]  // Add marker library to use AdvancedMarkerElement
   });
 
   const customIcon = useMemo(() => {
@@ -194,10 +194,6 @@ export default function LocationSearch({
 
     return {
       url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24' fill='%23EA4335' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z'%3E%3C/path%3E%3Ccircle cx='12' cy='9' r='3'%3E%3C/circle%3E%3C/svg%3E",
-      size: new google.maps.Size(36, 36),
-      origin: new google.maps.Point(0, 0),
-      anchor: new google.maps.Point(18, 36),
-      scaledSize: new google.maps.Size(36, 36),
     };
   }, [isLoaded]);
 
@@ -472,6 +468,61 @@ export default function LocationSearch({
     );
   };
 
+  const renderAdvancedMarker = useCallback((lat: number, lng: number, onClick: () => void) => {
+    if (!isLoaded || typeof google === "undefined" || !google.maps.marker) {
+      return null;
+    }
+
+    // Create a marker element
+    const markerElement = document.createElement('div');
+    markerElement.className = 'marker-element';
+    markerElement.style.backgroundImage = `url(${customIcon?.url})`;
+    markerElement.style.width = '36px';
+    markerElement.style.height = '36px';
+    markerElement.style.backgroundSize = 'contain';
+    markerElement.style.cursor = 'pointer';
+    markerElement.addEventListener('click', onClick);
+
+    // Create and return an AdvancedMarkerElement
+    const marker = new google.maps.marker.AdvancedMarkerElement({
+      position: { lat, lng },
+      content: markerElement,
+    });
+
+    // Attach the marker to the map
+    if (mapRef.current) {
+      marker.map = mapRef.current;
+    }
+
+    return marker;
+  }, [isLoaded, customIcon]);
+
+  useEffect(() => {
+    // Clear existing markers when component unmounts
+    return () => {
+      // Clean up markers if needed
+    };
+  }, []);
+
+  // Set up markers when map and POI data are available
+  useEffect(() => {
+    if (!isLoaded || !mapRef.current || !google?.maps?.marker) {
+      return;
+    }
+    
+    // Clear any existing markers
+
+    // Create POI markers
+    poiMarkers.forEach((poi) => {
+      renderAdvancedMarker(poi.lat, poi.lon, () => handlePoiClick(poi));
+    });
+
+    // Create selected location marker
+    if (selectedPlace && selectedLocation) {
+      renderAdvancedMarker(selectedLocation[0], selectedLocation[1], () => setShowInfoWindow(true));
+    }
+  }, [isLoaded, poiMarkers, selectedPlace, selectedLocation, renderAdvancedMarker, handlePoiClick]);
+
   return (
     <div className="relative w-full">
       {/* Search bar at the top */}
@@ -559,37 +610,40 @@ export default function LocationSearch({
           <GoogleMap
             mapContainerStyle={{ width: "100%", height: "100%" }}  
             zoom={mapZoom}
+            center={{ lat: validCenter[0], lng: validCenter[1] }}
             onLoad={(map) => {
               mapRef.current = map;
             }}
+            options={{
+              disableDefaultUI: false,
+              zoomControl: true,
+              streetViewControl: false,
+              mapTypeControl: false,
+            }}
           >
-            {/* POI Markers */}
-            {poiMarkers.map((poi) => (
-              <Marker
-                key={poi.id}
-                position={{ lat: poi.lat, lng: poi.lon }}
-                {...(customIcon && { icon: customIcon })}
-                onClick={() => handlePoiClick(poi)}
-              />
-            ))}
-
-            {/* Marker for selected search location */}
-            {selectedPlace &&
-              selectedPlace.place_id !== "my-location" &&
-              selectedLocation && (
-                <Marker
-                  position={{
-                    lat: selectedLocation[0],
-                    lng: selectedLocation[1],
-                  }}
-                  {...(customIcon && { icon: customIcon })}
-                  onClick={() => setShowInfoWindow(true)}
-                />
-              )}
-
-            {/* Update map position when location changes */}
-            {selectedLocation && (
-              <MapUpdater center={selectedLocation} zoom={mapZoom} />
+            {/* Note: We're not using the <Marker> component anymore
+                Our markers are now created programmatically using
+                AdvancedMarkerElement in the useEffect */}
+                
+            {/* Info Window */}
+            {selectedPlace && showInfoWindow && selectedLocation && (
+              <InfoWindow
+                position={{
+                  lat: selectedLocation[0],
+                  lng: selectedLocation[1],
+                }}
+                onCloseClick={() => setShowInfoWindow(false)}
+              >
+                <div className="max-w-[200px]">
+                  <h3 className="font-bold">
+                    {selectedPlace.address?.name ||
+                      selectedPlace.display_name.split(",")[0]}
+                  </h3>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {selectedPlace.display_name}
+                  </p>
+                </div>
+              </InfoWindow>
             )}
           </GoogleMap>
         )}
