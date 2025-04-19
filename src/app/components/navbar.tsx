@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [timeString, setTimeString] = useState("");
   const pathname = usePathname();
+  const { isAuthenticated, logout } = useAuth();
 
   // Handle scroll effect
   useEffect(() => {
@@ -51,11 +53,15 @@ export default function Navbar() {
     return pathname === path;
   };
 
+  const handleLogout = async () => {
+    await logout();
+  };
+
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${
       scrolled 
-        ? "bg-black/50 backdrop-blur-lg py-2 shadow-[0_0_15px_rgba(255,59,59,0.3)]" 
-        : "bg-transparent py-4"
+        ? "bg-black/90 backdrop-blur-lg py-2 shadow-[0_0_15px_rgba(255,59,59,0.3)]" 
+        : "bg-black/80 backdrop-blur-md py-4"
     }`}>
       <div className="container mx-auto flex justify-between items-center px-4">
         {/* Logo with futuristic design */}
@@ -89,13 +95,12 @@ export default function Navbar() {
           {[
             { label: "Home", path: "/" },
             { label: "About", path: "/about" },
-            { label: "Map", path: "/map" },
             { label: "Recommendations", path: "/recommendations" }
           ].map((item) => (
             <Link 
               key={item.path} 
               href={item.path}
-              className={`relative px-4 py-2 text-sm transition-all duration-300 overflow-hidden group ${
+              className={`relative flex justify-center px-4 py-2 text-sm transition-all duration-300 overflow-hidden group ${
                 isActive(item.path) 
                   ? "text-red-400" 
                   : "text-white hover:text-red-300"
@@ -110,17 +115,30 @@ export default function Navbar() {
             </Link>
           ))}
           
-          {/* Login/Register button with futuristic design */}
-          <Link 
-            href="/login" 
-            className="relative ml-2 px-6 py-1.5 bg-gradient-to-r from-red-700 to-red-500 text-white rounded-full overflow-hidden group"
-          >
-            <span className="absolute inset-0 flex items-center justify-center w-full h-full text-sm font-medium tracking-wider z-10">
-              Login
-            </span>
-            <span className="absolute inset-0 scale-x-0 group-hover:scale-100 transition-transform duration-500 origin-left bg-gradient-to-r from-red-600/80 via-red-500/80 to-red-400/80"></span>
-            <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_50%_120%,rgba(255,69,58,0.5),transparent_80%)]"></span>
-          </Link>
+          {/* Conditionally render login button or logout button */}
+          {isAuthenticated ? (
+            <button 
+              onClick={handleLogout}
+              className="relative w-[18%] ml-2 px-6 py-1.5 bg-gradient-to-r from-red-700 to-red-500 text-white rounded-full overflow-hidden group hover:shadow-[0_0_10px_rgba(255,59,59,0.3)] transition-all duration-300"
+            >
+              <span className="absolute inset-0 flex items-center justify-center w-full h-full text-sm font-medium tracking-wider z-10">
+                Logout
+              </span>
+              <span className="absolute inset-0 scale-x-0 group-hover:scale-100 transition-transform duration-500 origin-left bg-gradient-to-r from-red-600/80 via-red-500/80 to-red-400/80"></span>
+              <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_50%_120%,rgba(255,69,58,0.5),transparent_80%)]"></span>
+            </button>
+          ) : (
+            <Link 
+              href="/login" 
+              className="relative ml-2 px-6 py-1.5 bg-gradient-to-r from-red-700 to-red-500 text-white rounded-full overflow-hidden group hover:shadow-[0_0_10px_rgba(255,59,59,0.3)] transition-all duration-300"
+            >
+              <span className="absolute inset-0 flex items-center justify-center w-full h-full text-sm font-medium tracking-wider z-10">
+                Login
+              </span>
+              <span className="absolute inset-0 scale-x-0 group-hover:scale-100 transition-transform duration-500 origin-left bg-gradient-to-r from-red-600/80 via-red-500/80 to-red-400/80"></span>
+              <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_50%_120%,rgba(255,69,58,0.5),transparent_80%)]"></span>
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -166,13 +184,12 @@ export default function Navbar() {
 
       {/* Mobile Menu - Futuristic Dropdown */}
       {isMobileMenuOpen && (
-        <div className="md:hidden transform transition-all duration-300 ease-out">
+        <div className="md:hidden transform transition-all duration-300 ease-out mt-4">
           <div className="bg-black/70 backdrop-blur-md border-t border-red-500/20 animate-slideDown shadow-[0_5px_15px_rgba(255,59,59,0.2)]">
             <div className="flex flex-col space-y-1 p-4">
               {[
                 { label: "Home", path: "/" },
                 { label: "About", path: "/about" },
-                { label: "Map", path: "/map" },
                 { label: "Recommendations", path: "/recommendations" }
               ].map((item) => (
                 <Link 
@@ -187,12 +204,21 @@ export default function Navbar() {
                   {item.label}
                 </Link>
               ))}
-              <Link 
-                href="/login"
-                className="mt-2 px-4 py-3 bg-gradient-to-r from-red-700 to-red-500 text-white rounded-lg font-medium text-center"
-              >
-                Login / Register
-              </Link>
+              {isAuthenticated ? (
+                <button 
+                  onClick={handleLogout}
+                  className="mt-2 px-4 py-3 bg-gradient-to-r from-red-700 to-red-500 text-white rounded-lg font-medium text-center hover:from-red-600 hover:to-red-400 transition-all duration-300 shadow-sm hover:shadow-[0_0_10px_rgba(255,59,59,0.3)]"
+                >
+                  Logout
+                </button>
+              ) : (
+                <Link 
+                  href="/login"
+                  className="mt-2 px-4 py-3 bg-gradient-to-r from-red-700 to-red-500 text-white rounded-lg font-medium text-center hover:from-red-600 hover:to-red-400 transition-all duration-300 shadow-sm hover:shadow-[0_0_10px_rgba(255,59,59,0.3)]"
+                >
+                  Login / Register
+                </Link>
+              )}
             </div>
           </div>
         </div>
