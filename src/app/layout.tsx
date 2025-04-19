@@ -2,6 +2,9 @@ import "~/styles/globals.css";
 
 import { type Metadata, type Viewport } from "next";
 import { Inter } from "next/font/google";
+import AuthSessionProvider from "./components/AuthSessionProvider";
+import { AuthProvider } from "./contexts/AuthContext";
+import Navbar from "./components/navbar";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -14,8 +17,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "LocationFinder - Temukan Lokasi Impian Anda",
-  description: "Aplikasi pencarian lokasi dengan tampilan futuristik",
+  title: "Bassline - Find Your Dream Location",
+  description: "Location search application with futuristic interface",
   icons: [{ rel: "icon", url: "images/favicon.ico" }],
 };
 
@@ -25,7 +28,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen bg-white relative overflow-x-hidden`} suppressHydrationWarning>
-        {children}
+        <AuthSessionProvider>
+          <AuthProvider>
+            <Navbar />
+            {children}
+          </AuthProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -11,7 +12,14 @@ interface PlaceResult {
   lat: string;
   lon: string;
   display_name: string;
+  category?: string;
+  rating?: number;
+  open_hours?: string;
+  image_url?: string;
+  description?: string;
 }
+
+
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,10 +29,19 @@ export default function Home() {
   const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/login");
+    }
+  }, [router]);
+
   // Handle form submit
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      setIsSearching(true);
+      await searchPlaces(searchQuery);
       router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
     }
   };
@@ -34,25 +51,78 @@ export default function Home() {
     const value = e.target.value;
     setSearchQuery(value);
 
-    if (value.length > 2) {
+    if (value.length > 1) {
       setIsSearching(true);
-      void searchPlaces(value);
+      void searchAutocomplete(value);
     } else {
       setSearchResults([]);
       setShowDropdown(false);
     }
   };
 
-  // Search places dengan Nominatim API (OpenStreetMap)
+  // Search autocomplete using Swagger API
+  const searchAutocomplete = async (query: string) => {
+    try {
+      const api = (await import('src/app/utils/api')).default;
+      const response = await api.get('/api/google-maps/places/autocomplete', {
+        params: {
+          input: query,
+        },
+      });
+      const data = response.data;
+
+      if (data && data.predictions && data.predictions.length > 0) {
+        // Transform API results to PlaceResult format
+        const enhancedData: PlaceResult[] = data.predictions.map((prediction: any) => ({
+          place_id: prediction.place_id,
+          lat: "", // lat/lon not provided in autocomplete response, can be fetched separately if needed
+          lon: "",
+          display_name: prediction.description,
+          category: prediction.types?.[0] || "establishment",
+          rating: 4.0,
+          open_hours: "Varies",
+          description: `Location in ${prediction.description.split(',').slice(-2)[0] || 'Indonesia'}`
+        }));
+        setSearchResults(enhancedData);
+        setShowDropdown(true);
+      } else {
+        setSearchResults([]);
+        setShowDropdown(false);
+      }
+      setIsSearching(false);
+    } catch (error) {
+      console.error("Error searching autocomplete:", error);
+      setSearchResults([]);
+      setShowDropdown(false);
+      setIsSearching(false);
+    }
+  };
+
+  // Search places using Swagger API
   const searchPlaces = async (query: string) => {
     try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=id`,
-      );
-      const data = (await response.json()) as PlaceResult[];
+      const api = (await import('src/app/utils/api')).default;
+      const response = await api.get('/api/google-maps/places/search/', {
+        params: {
+          query: query,
+        },
+      });
+      const data = response.data;
 
-      if (data && data.length > 0) {
-        setSearchResults(data);
+      if (data && data.results && data.results.length > 0) {
+        // Transform API results to PlaceResult format
+        const enhancedData: PlaceResult[] = data.results.map((item: any) => ({
+          place_id: item.id.toString(),
+          lat: item.latitude.toString(),
+          lon: item.longitude.toString(),
+          display_name: item.name,
+          category: item.category,
+          rating: item.rating,
+          open_hours: item.open_hours,
+          image_url: item.image_url,
+          description: item.description,
+        }));
+        setSearchResults(enhancedData);
         setShowDropdown(true);
       } else {
         setSearchResults([]);
@@ -71,13 +141,20 @@ export default function Home() {
   const handleSelectPlace = (place: PlaceResult) => {
     setSearchQuery(place.display_name.split(",")[0] ?? "");
     setShowDropdown(false);
-    router.push(`/search?q=${encodeURIComponent(place.display_name)}`);
+    // Pass more complete information via URL params
+    const locationData = {
+      name: place.display_name,
+      lat: place.lat,
+      lon: place.lon,
+      category: place.category,
+      rating: place.rating
+    };
+    router.push(`/search?q=${encodeURIComponent(place.display_name)}&data=${encodeURIComponent(JSON.stringify(locationData))}`);
   };
 
   const handleMapClick = () => {
-    router.push('/search?q=map');
+    router.push('/search?q=&showMap=true');
   };
-
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -95,8 +172,8 @@ export default function Home() {
       <div className="container mx-auto px-4 py-6">
         <div className="mx-auto max-w-md md:max-w-2xl lg:max-w-4xl">
           <div className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="relative h-50 w-50 sm:h-50 sm:w-50 md:h-50 md:w-50">
+            <div className="flex justify-center">
+              <div className="relative w-[15rem] h-[15rem]">
                 <Image
                   src="/images/favicon.ico"
                   alt="BASSLINE Logo"
@@ -189,6 +266,21 @@ export default function Home() {
                         <p className="mt-1 text-sm text-gray-500">
                           {place.display_name}
                         </p>
+                        {place.category && (
+                          <div className="flex items-center mt-1">
+                            <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
+                              {place.category}
+                            </span>
+                            {place.rating && (
+                              <span className="ml-2 text-xs flex items-center text-amber-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                {place.rating}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -201,8 +293,8 @@ export default function Home() {
                 }
               </div>
             </div>
-            <p className="mt-4 text-sm sm:text-base text-red-500 font-medium">
-              OR GO STRAIGHT TO OUR <span onClick={handleMapClick} className="underline cursor-pointer">MAP</span>
+            <p onClick={handleMapClick}  className="mt-4 text-sm sm:text-base text-red-500 font-medium underline cursor-pointer">
+              OR GO STRAIGHT TO OUR MAP
             </p>
           </div>
         </div>
