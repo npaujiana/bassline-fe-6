@@ -155,7 +155,6 @@ export default function Home() {
   const handleMapClick = () => {
     router.push('/search?q=&showMap=true');
   };
-
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

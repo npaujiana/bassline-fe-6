@@ -7,8 +7,8 @@ import { useAuth } from "../contexts/AuthContext";
 
 function LoginContent() {
   const router = useRouter();
-  // const searchParams = useSearchParams();
-  const registered = "false";
+  const searchParams = useSearchParams();
+  const registered = searchParams.get('registered');
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -16,20 +16,36 @@ function LoginContent() {
   const [isLoading, setIsLoading] = useState(false);
   
   // Use the auth context
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
 
-  // Check if user is already logged in and redirect to home page
+  // Check if user is already logged in and redirect appropriately
   useEffect(() => {
     // Check for access token in localStorage
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken || isAuthenticated) {
-      router.push("/");
+      // Get user info from localStorage to check admin status
+      const userInfoStr = localStorage.getItem("userInfo");
+      if (userInfoStr) {
+        try {
+          const userInfo = JSON.parse(userInfoStr);
+          if (userInfo.isAdmin) {
+            router.push("/dashboard");
+          } else {
+            router.push("/");
+          }
+        } catch (e) {
+          // If there's an error parsing, default to homepage
+          router.push("/");
+        }
+      } else {
+        router.push("/");
+      }
     }
   }, [isAuthenticated, router]);
 
   // Menampilkan pesan sukses jika user berhasil register
   useEffect(() => {
-    if (registered === "false") {
+    if (registered === "true") {
       setSuccess("Registrasi berhasil! Silakan login dengan akun baru Anda.");
     }
   }, [registered]);
@@ -53,8 +69,26 @@ function LoginContent() {
       if (!result.success) {
         setError(result.error || "Login gagal. Periksa email dan password Anda.");
       } else {
-        // Redirect will be handled by the AuthContext
-        router.push("/");
+        // Check if the logged-in user is an admin
+        const userInfoStr = localStorage.getItem("userInfo");
+        if (userInfoStr) {
+          try {
+            const userInfo = JSON.parse(userInfoStr);
+            if (userInfo.isAdmin) {
+              // Redirect admin users to dashboard
+              router.push("/dashboard");
+            } else {
+              // Redirect regular users to homepage
+              router.push("/");
+            }
+          } catch (e) {
+            // Default to homepage if there's an error
+            router.push("/");
+          }
+        } else {
+          router.push("/");
+        }
+        
         router.refresh();
       }
     } catch (err: any) {
@@ -111,7 +145,7 @@ function LoginContent() {
             <div className="relative z-10 rounded-md bg-green-600/80 p-4 border border-green-400/50">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <svg className="h-5 w-5 text-white" xmlns="http://www.w.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                 </div>

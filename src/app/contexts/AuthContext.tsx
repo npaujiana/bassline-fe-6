@@ -16,10 +16,22 @@ interface DecodedToken {
   id?: number;
   email?: string;
   username?: string;
+  is_admin?: boolean;
   // Add other fields as necessary
 }
 
 interface LoginResponse {
+  success?: boolean;
+  message?: string;
+  data?: {
+    token?: string;
+    user?: {
+      id?: number;
+      email?: string;
+      username?: string;
+      is_admin?: boolean;
+    }
+  };
   refresh?: string;
   access?: string;
   token?: string;
@@ -33,6 +45,7 @@ type User = {
   id?: number;
   email?: string;
   username?: string;
+  isAdmin?: boolean;
   // Add other user fields as needed
 }
 
@@ -85,7 +98,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return {
           id: decoded.user_id || decoded.id,
           email: decoded.email,
-          username: decoded.username
+          username: decoded.username,
+          isAdmin: decoded.is_admin
           // Add other properties as needed
         };
       } catch (error) {
@@ -144,36 +158,48 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       };
       
       // Call the API endpoint
-      const response = await axiosInstance.post<LoginResponse>('/api/login/', requestBody);
-      const data = response.data;
+      const response = await axiosInstance.post<LoginResponse>('/api/login', requestBody);
+      const responseData = response.data;
       
-      console.log("Login response:", data);
+      console.log("Login response:", responseData);
       
-      // Extract tokens from response (handle different response formats)
-      const accessToken = data.access || data.token || data.accessToken;
-      const refreshToken = data.refresh || data.refreshToken;
+      // Extract token from the new response format (data.token)
+      const token = responseData.data?.token;
       
-      if (!accessToken) {
-        throw new Error('Access token not found in response');
+      if (!token) {
+        throw new Error('Token not found in response');
       }
       
-      // Save tokens to local storage
-      localStorage.setItem("accessToken", accessToken);
-      if (refreshToken) {
-        localStorage.setItem("refreshToken", refreshToken);
-      }
+      // Save token to local storage
+      localStorage.setItem("accessToken", token);
       
       // Update state
-      setAccessToken(accessToken);
-      setRefreshToken(refreshToken || null);
+      setAccessToken(token);
+      setRefreshToken(null); // No refresh token in the new format
       
-      // Extract and store user data
-      const userData = extractUserInfo(accessToken, data);
-      if (userData) {
+      // Extract and store user data from the user object in the response
+      if (responseData.data?.user) {
+        const userData = {
+          id: responseData.data.user.id,
+          email: responseData.data.user.email,
+          username: responseData.data.user.username,
+          isAdmin: responseData.data.user.is_admin
+        };
+        
         setUser(userData);
         localStorage.setItem("userInfo", JSON.stringify(userData));
         if (userData.id) {
           localStorage.setItem("userId", userData.id.toString());
+        }
+      } else {
+        // If there's no user object in the response, try to extract user info from token
+        const userData = extractUserInfo(token);
+        if (userData) {
+          setUser(userData);
+          localStorage.setItem("userInfo", JSON.stringify(userData));
+          if (userData.id) {
+            localStorage.setItem("userId", userData.id.toString());
+          }
         }
       }
       
@@ -221,7 +247,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       };
       
       // Call the API endpoint
-      const response = await axiosInstance.post('/api/register/', requestBody);
+      const response = await axiosInstance.post('/api/register', requestBody);
       
       return { success: true };
     } catch (error: any) {
