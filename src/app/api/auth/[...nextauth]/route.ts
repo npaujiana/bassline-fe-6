@@ -29,7 +29,7 @@ const authOptions = {
         }
 
         try {
-          const response = await axiosInstance.post('/api/login/', {
+          const response = await axiosInstance.post('/api/login', {
             username: credentials.username,
             password: credentials.password
           });
@@ -37,12 +37,14 @@ const authOptions = {
           console.log("Login response:", response);
 
           if (response.status === 200 && response.data) {
-            // Transform the response data into a User object
+            // Transform the response data into a User object based on the new response format
             return {
-              id: response.data.id || response.data._id || 'default-id',
-              name: response.data.name || credentials.username,
-              email: response.data.email || credentials.username,
-              accessToken: response.data.accessToken || response.data.token
+              id: response.data.user?.id || 'default-id',
+              name: response.data.user?.username || credentials.username,
+              email: response.data.user?.email || credentials.username,
+              accessToken: response.data.access_token,
+              refreshToken: response.data.refresh_token,
+              isAdmin: response.data.user?.is_admin || false
             };
           }
           return null;

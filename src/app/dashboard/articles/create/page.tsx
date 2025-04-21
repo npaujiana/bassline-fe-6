@@ -3,8 +3,10 @@
 import React, { useState, useRef } from 'react';
 import { ArrowLeftIcon, PhotoIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { createArticle } from '../../../utils/api';
 
-// Interface untuk data artikel
+// Interface for article form data
 interface ArticleFormData {
   title: string;
   content: string;
@@ -16,7 +18,9 @@ interface ArticleFormData {
 }
 
 export default function CreateArticle() {
-  // State untuk form artikel
+  const router = useRouter();
+  
+  // State for article form
   const [formData, setFormData] = useState<ArticleFormData>({
     title: '',
     content: '',
@@ -27,22 +31,23 @@ export default function CreateArticle() {
     tags: [],
   });
   
-  // State untuk tag input
+  // State for tag input
   const [tagInput, setTagInput] = useState('');
   
-  // State untuk preview image
+  // State for preview image
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
   
-  // Ref untuk file input
+  // Ref for file input
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // State untuk loading
+  // State for loading
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  // Kategori artikel
+  // Categories for the article
   const categories = ['Music Venues', 'Bars & Drinks', 'Events', 'Nightlife', 'Artists', 'Festivals'];
   
-  // Handle perubahan input text
+  // Handle input text changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({
@@ -51,7 +56,7 @@ export default function CreateArticle() {
     });
   };
   
-  // Handle upload gambar
+  // Handle image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -69,14 +74,14 @@ export default function CreateArticle() {
     }
   };
   
-  // Handle click pada tombol upload
+  // Handle click on upload button
   const handleUploadClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
   
-  // Handle tambah tag
+  // Handle add tag
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && tagInput.trim() !== '') {
       e.preventDefault();
@@ -102,24 +107,44 @@ export default function CreateArticle() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
     
-    // Simulasi proses pengiriman data
     try {
-      // Di sini nanti akan ada kode untuk mengirim data ke API
-      console.log('Submitting data:', formData);
-      
-      // Simulasi delay untuk demo
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await createArticle({
+        title: formData.title,
+        content: formData.content,
+        status: formData.status,
+        excerpt: formData.excerpt,
+        category: formData.category,
+        tags: formData.tags,
+        coverImage: formData.coverImage,
+      });
       
       alert('Article created successfully!');
-      // Redirect ke dashboard artikel setelah sukses
-      window.location.href = '/dashboard/articles';
+      // Redirect to dashboard articles after success
+      router.push('/dashboard/articles');
     } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Failed to create article');
+      console.error('Error creating article:', error);
+      setError('Failed to create article. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+  
+  // Show error message if there's an error
+  const ErrorMessage = () => {
+    if (!error) return null;
+    
+    return (
+      <div className="mb-6 p-4 border border-red-500/30 rounded-lg bg-red-900/20 text-red-400">
+        <div className="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+          {error}
+        </div>
+      </div>
+    );
   };
   
   return (
@@ -141,8 +166,10 @@ export default function CreateArticle() {
           
           <div>
             <button
-              type="button"
+              type="submit"
+              form="article-form"
               className="px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 hover:shadow-lg hover:shadow-red-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
@@ -158,6 +185,9 @@ export default function CreateArticle() {
             </button>
           </div>
         </div>
+        
+        {/* Display error message if there is one */}
+        <ErrorMessage />
         
         {/* Form section with glassmorphism effect */}
         <div className="backdrop-blur-md bg-white/5 rounded-xl border border-white/10 p-6 shadow-lg relative overflow-hidden">
@@ -361,13 +391,6 @@ export default function CreateArticle() {
               >
                 Cancel
               </Link>
-              
-              <button
-                type="button"
-                className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Save as Draft
-              </button>
               
               <button
                 type="submit"

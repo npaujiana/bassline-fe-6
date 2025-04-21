@@ -70,7 +70,7 @@ function SearchContent() {
             {isLoading ? (
               <Loading text="Loading location search..." />
             ) : (
-              <LocationSearch initialQuery={decodedQuery} />
+              <LocationSearch />
             )}
           </div>
         </div>

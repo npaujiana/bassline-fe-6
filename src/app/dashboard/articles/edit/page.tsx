@@ -3,9 +3,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeftIcon, PhotoIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import type { Article } from '../../../utils/api';
+import { fetchArticleById, updateArticle, deleteArticle } from '../../../utils/api';
 
-// Interface untuk data artikel
+// Interface for article form data
 interface ArticleFormData {
   id: number;
   title: string;
@@ -21,10 +23,11 @@ interface ArticleFormData {
 }
 
 export default function EditArticle() {
-  // const searchParams = useSearchParams();
-  const articleId =  '1'; // Default to '1' if no ID provided
+  const searchParams: any = useSearchParams();
+  const router = useRouter();
+  const articleId = searchParams.get('id') || '1'; // Default to '1' if no ID provided
   
-  // State untuk form artikel
+  // State for article form
   const [formData, setFormData] = useState<ArticleFormData>({
     id: parseInt(articleId),
     title: '',
@@ -39,74 +42,68 @@ export default function EditArticle() {
     publishDate: '',
   });
   
-  // State untuk tag input
+  // State for tag input
   const [tagInput, setTagInput] = useState('');
   
-  // State untuk preview image
+  // State for preview image
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
   
-  // Ref untuk file input
+  // Ref for file input
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // State untuk loading
+  // State for loading
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
-  // Kategori artikel
+  // Categories for the article
   const categories = ['Music Venues', 'Bars & Drinks', 'Events', 'Nightlife', 'Artists', 'Festivals'];
   
-  // Dummy article data (simulasi fetch dari API)
-  const dummyArticles = [
-    {
-      id: 1,
-      title: "The Best Jazz Bars in San Francisco",
-      content: "San Francisco has a rich jazz heritage and offers some of the best jazz venues in the country. From historic clubs that have hosted legendary performers to modern lounges with innovative talent, the city's jazz scene is vibrant and diverse.\n\nIf you're looking for authentic jazz experiences in San Francisco, make sure to check out these venues:\n\n1. **Bar Part Time**: Located on 14th Street, this trendy spot offers a mix of classic jazz and modern interpretations. The intimate setting creates a perfect atmosphere for enjoying the nuanced performances.\n\n2. **Key Klub**: This stylish cocktail bar frequently features live jazz performances in an upscale yet approachable environment. The acoustics are excellent, making it a favorite among serious jazz aficionados.\n\n3. **Black Cat**: A Tenderloin gem that hosts some of the best local and touring jazz artists. The supper club atmosphere harkens back to jazz's golden era.\n\n4. **Mr. Tipple's Recording Studio**: Combines craft cocktails with nightly jazz performances. The sound quality is exceptional, and there's never a cover charge.\n\n5. **SFJAZZ Center**: While not a bar, this modern venue is the West Coast's premier jazz institution, offering world-class performances throughout the year.",
-      excerpt: "Explore the vibrant jazz scene in San Francisco with our guide to the city's best jazz bars and lounges.",
-      author: "John Doe",
-      publishDate: "2025-04-12",
-      category: "Music Venues",
-      status: "published",
-      coverImageUrl: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      tags: ["jazz", "live music", "san francisco", "nightlife", "cocktail bars"],
-    },
-    {
-      id: 2,
-      title: "Underground Electronic Music Spots",
-      content: "The underground electronic music scene in San Francisco is thriving, with venues that range from warehouse spaces to intimate clubs. These spaces are where you'll find the most cutting-edge sounds and vibrant communities of music enthusiasts.\n\nSome of the best underground electronic music venues include:\n\n1. **The Midway**: This massive creative complex hosts some of the biggest names in techno and house music, with state-of-the-art sound systems and immersive light installations.\n\n2. **Public Works**: Located in the Mission District, this venue consistently books forward-thinking electronic music artists across multiple rooms.\n\n3. **F8**: A small but mighty club that focuses on bass music and experimental sounds, with a loyal local following.\n\n4. **Great Northern**: Features stunning design elements and a powerful sound system, hosting everything from deep house to progressive trance events.\n\n5. **Audio**: A sleek, high-end club with a custom Funktion-One sound system that attracts world-class DJs and producers.",
-      excerpt: "Discover the hidden underground electronic music venues that are redefining the nightlife scene.",
-      author: "Jane Smith",
-      publishDate: "2025-04-10",
-      category: "Music Venues",
-      status: "draft",
-      coverImageUrl: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      tags: ["electronic", "techno", "house music", "nightclub", "DJ"],
-    },
-  ];
-  
-  // Fetch article data (simulasi API call)
+  // Fetch article data from API
   useEffect(() => {
-    setIsLoading(true);
-    
-    // Simulasi fetch dari API berdasarkan articleId
-    setTimeout(() => {
-      const article = dummyArticles.find(a => a.id === parseInt(articleId));
-      
-      if (article) {
+    const loadArticle = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const article = await fetchArticleById(articleId);
+        
+        // Transform API article data to form data format
         setFormData({
-          ...article,
-          coverImage: null, // Tidak ada file lokal, hanya URL
-          status: article.status as 'draft' | 'published', // Ensure status has the correct type
+          id: article.id,
+          title: article.title || '',
+          content: article.content || '',
+          category: article.category || '',
+          excerpt: article.excerpt || '',
+          coverImage: null,
+          coverImageUrl: article.coverImageUrl,
+          status: article.status as 'draft' | 'published',
+          tags: article.tags || [],
+          author: article.created_by || 'Anonymous',
+          publishDate: formatDate(article.published_at || article.created_at),
         });
         
-        // Set image preview dari URL
-        setCoverImagePreview(article.coverImageUrl || null);
+        // Set image preview from URL
+        if (article.coverImageUrl) {
+          setCoverImagePreview(article.coverImageUrl);
+        }
+      } catch (error) {
+        console.error(`Error fetching article ${articleId}:`, error);
+        setError('Failed to load article. Please try again.');
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
-    }, 1000); // Simulate network delay
+    };
+    
+    loadArticle();
   }, [articleId]);
   
-  // Handle perubahan input text
+  // Format date for display
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
+  };
+  
+  // Handle input text changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({
@@ -115,7 +112,7 @@ export default function EditArticle() {
     });
   };
   
-  // Handle upload gambar
+  // Handle image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -133,14 +130,14 @@ export default function EditArticle() {
     }
   };
   
-  // Handle click pada tombol upload
+  // Handle click on upload button
   const handleUploadClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
   
-  // Handle tambah tag
+  // Handle add tag
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && tagInput.trim() !== '') {
       e.preventDefault();
@@ -162,36 +159,89 @@ export default function EditArticle() {
     });
   };
   
-  // Handle submit form
+  // Handle delete article
+  const handleDeleteArticle = async () => {
+    if (confirm("Are you sure you want to delete this article?")) {
+      try {
+        setIsSubmitting(true);
+        await deleteArticle(formData.id);
+        alert('Article successfully deleted!');
+        router.push('/dashboard/articles');
+      } catch (error) {
+        console.error('Error deleting article:', error);
+        alert('Failed to delete article. Please try again.');
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
+  
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulasi proses pengiriman data
     try {
-      // Di sini nanti akan ada kode untuk mengirim data ke API
-      console.log('Updating article data:', formData);
-      
-      // Simulasi delay untuk demo
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Prepare data for API
+      await updateArticle({
+        id: formData.id,
+        title: formData.title,
+        content: formData.content,
+        status: formData.status,
+        excerpt: formData.excerpt,
+        category: formData.category,
+        tags: formData.tags,
+        coverImage: formData.coverImage,
+      });
       
       alert('Article updated successfully!');
-      // Redirect ke dashboard artikel setelah sukses
-      window.location.href = '/dashboard/articles';
+      // Redirect to dashboard articles after success
+      router.push('/dashboard/articles');
     } catch (error) {
-      console.error('Error updating form:', error);
-      alert('Failed to update article');
+      console.error('Error updating article:', error);
+      alert('Failed to update article. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
   
+  // Show loading state
   if (isLoading) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-gray-900 via-red-900 to-black p-6 md:p-8 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
           <p className="mt-4 text-white text-lg">Loading article data...</p>
+        </div>
+      </main>
+    );
+  }
+  
+  // Show error state
+  if (error) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-gray-900 via-red-900 to-black p-6 md:p-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="rounded-full bg-red-900/30 p-4 mx-auto w-16 h-16 flex items-center justify-center mb-4">
+            <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <p className="text-red-400 text-lg mb-4">{error}</p>
+          <div className="flex justify-center space-x-3">
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-red-900/30 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-900/50 transition-colors"
+            >
+              Try Again
+            </button>
+            <Link 
+              href="/dashboard/articles" 
+              className="px-4 py-2 bg-black/30 text-white rounded-lg hover:bg-black/50 transition-colors"
+            >
+              Back to Articles
+            </Link>
+          </div>
         </div>
       </main>
     );
@@ -216,8 +266,10 @@ export default function EditArticle() {
           
           <div>
             <button
-              type="button"
+              type="submit"
+              form="article-form"
               className="px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 hover:shadow-lg hover:shadow-red-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
@@ -446,12 +498,8 @@ export default function EditArticle() {
               <button
                 type="button"
                 className="px-4 py-2 bg-red-900/20 text-red-400 rounded-lg hover:bg-red-900/40 transition-colors"
-                onClick={() => {
-                  if (confirm("Are you sure you want to delete this article?")) {
-                    alert("Article would be deleted (not implemented in this demo)");
-                    window.location.href = '/dashboard/articles';
-                  }
-                }}
+                onClick={handleDeleteArticle}
+                disabled={isSubmitting}
               >
                 Delete Article
               </button>

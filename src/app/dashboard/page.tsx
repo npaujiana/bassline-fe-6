@@ -1,433 +1,388 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import AdminLayout from "../components/AdminLayout";
+import Link from "next/link";
+import { fetchVenues, fetchAmenities, fetchTags, fetchGenres } from "../utils/api";
 
-const initialArticles = [
+// Stats data icons and gradient configurations
+const statsConfig = [
+  {
+    title: "Information Venues",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+    ),
+    bgGradient: "from-red-500 to-red-600",
+  },
+  {
+    title: "Amenities",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+      </svg>
+    ),
+    bgGradient: "from-purple-500 to-purple-600",
+  },
+  {
+    title: "Tags",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+      </svg>
+    ),
+    bgGradient: "from-blue-500 to-blue-600",
+  },
+  {
+    title: "Genres",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+      </svg>
+    ),
+    bgGradient: "from-yellow-500 to-yellow-600",
+  }
+];
+
+// Recent venues data
+const recentActivity = [
   {
     id: 1,
-    title: "Beautiful Beach",
-    description: "A beautiful beach with crystal clear water and white sand.",
-    location: "Bali, Indonesia",
-    createdAt: "2025-04-10"
+    type: "venue",
+    action: "added",
+    name: "The Bass Lounge",
+    time: "5 minutes ago",
+    user: "Admin User",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4zm3 1h6v4H7V5zm8 8V7a1 1 0 00-1-1H6a1 1 0 00-1 1v6a1 1 0 001 1h8a1 1 0 001-1z" clipRule="evenodd" />
+      </svg>
+    )
   },
   {
     id: 2,
-    title: "Mountain Retreat",
-    description: "A peaceful mountain retreat surrounded by nature.",
-    location: "Bandung, Indonesia",
-    createdAt: "2025-04-15"
+    type: "article",
+    action: "updated",
+    name: "Top 10 EDM Venues in NYC",
+    time: "1 hour ago",
+    user: "Content Editor",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+      </svg>
+    )
   },
+  {
+    id: 3,
+    type: "user",
+    action: "registered",
+    name: "john_doe_music",
+    time: "3 hours ago",
+    user: "System",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+      </svg>
+    )
+  },
+  {
+    id: 4,
+    type: "genre",
+    action: "added",
+    name: "Future Garage",
+    time: "Yesterday",
+    user: "Admin User",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+      </svg>
+    )
+  },
+  {
+    id: 5,
+    type: "venue",
+    action: "updated",
+    name: "Techno Temple",
+    time: "2 days ago",
+    user: "Venue Manager",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4zm3 1h6v4H7V5zm8 8V7a1 1 0 00-1-1H6a1 1 0 00-1 1v6a1 1 0 001 1h8a1 1 0 001-1z" clipRule="evenodd" />
+      </svg>
+    )
+  }
 ];
 
 export default function DashboardPage() {
-  const [articles, setArticles] = useState(initialArticles);
-  const [form, setForm] = useState({ title: "", description: "", location: "" });
-  const [editId, setEditId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("articles");
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const [currentDate, setCurrentDate] = useState("");
+  const [currentTime, setCurrentTime] = useState("");
+  // Define the type for stat items
+  type StatItem = {
+    title: string;
+    icon: React.ReactNode;
+    bgGradient: string;
+    value: number;
+    change: string;
+    positive: boolean;
   };
+  
+  const [statsData, setStatsData] = useState<StatItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  const handleAdd = () => {
-    if (!form.title || !form.description || !form.location) return;
-    
-    setIsLoading(true);
-    
-    setTimeout(() => {
-      const newArticle = {
-        id: articles.length ? Math.max(...articles.map((a) => a.id)) + 1 : 1,
-        title: form.title,
-        description: form.description,
-        location: form.location,
-        createdAt: new Date().toISOString().split('T')[0] || new Date().toDateString()
-      };
-      setArticles([...articles, newArticle]);
-      setForm({ title: "", description: "", location: "" });
-      setIsLoading(false);
-    }, 600);
-  };
-
-  const handleEdit = (article: { id: number; title: string; description: string; location: string }) => {
-    setEditId(article.id);
-    setForm({
-      title: article.title,
-      description: article.description,
-      location: article.location,
-    });
-  };
-
-  const handleUpdate = () => {
-    setIsLoading(true);
-    
-    setTimeout(() => {
-      setArticles(
-        articles.map((a) =>
-          a.id === editId ? { ...a, ...form } : a
-        )
-      );
-      setEditId(null);
-      setForm({ title: "", description: "", location: "" });
-      setIsLoading(false);
-    }, 600);
-  };
-
-  const handleDelete = (id: number) => {
-    setIsLoading(true);
-    
-    setTimeout(() => {
-      setArticles(articles.filter((a) => a.id !== id));
-      if (editId === id) {
-        setEditId(null);
-        setForm({ title: "", description: "", location: "" });
-      }
-      setIsLoading(false);
-    }, 600);
-  };
-
-  // Animation effect for loading state
   useEffect(() => {
-    if (isLoading) {
-      document.body.style.cursor = 'progress';
-    } else {
-      document.body.style.cursor = 'default';
-    }
-    
-    return () => {
-      document.body.style.cursor = 'default';
+    const updateDateTime = () => {
+      const now = new Date();
+      setCurrentDate(now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
+      setCurrentTime(now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     };
-  }, [isLoading]);
 
-  // Dashboard data for summary
-  const dashboardData = {
-    totalArticles: articles.length,
-    recentActivity: "2 new articles added today",
-    pendingReviews: 3,
-    analytics: {
-      views: 1254,
-      engagement: "78%",
-      trending: "Bali, Indonesia"
-    }
-  };
+    updateDateTime();
+    const interval = setInterval(updateDateTime, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(false);
+      
+      try {
+        // Use Promise.allSettled to handle all API calls together, even if some fail
+        const [venuesResult, amenitiesResult, tagsResult, genresResult] = await Promise.allSettled([
+          fetchVenues(),
+          fetchAmenities(),
+          fetchTags(),
+          fetchGenres()
+        ]);
+
+        // Default values in case API fails
+        let venuesCount = 0;
+        let amenitiesCount = 0;
+        let tagsCount = 0;
+        let genresCount = 0;
+
+        // Extract data from successful API calls
+        if (venuesResult.status === 'fulfilled') {
+          venuesCount = venuesResult.value.length;
+        }
+        
+        if (amenitiesResult.status === 'fulfilled') {
+          amenitiesCount = amenitiesResult.value.length;
+        }
+        
+        if (tagsResult.status === 'fulfilled') {
+          tagsCount = tagsResult.value.length;
+        }
+        
+        if (genresResult.status === 'fulfilled') {
+          genresCount = genresResult.value.length;
+        }
+
+        setStatsData([
+          { ...statsConfig[0], value: venuesCount, change: "+5%", positive: true } as StatItem,
+          { ...statsConfig[1], value: amenitiesCount, change: "+2%", positive: true } as StatItem,
+          { ...statsConfig[2], value: tagsCount, change: "+8%", positive: true } as StatItem,
+          { ...statsConfig[3], value: genresCount, change: "+3%", positive: true } as StatItem,
+        ]);
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-950 to-purple-900 p-4 md:p-8 relative">
-      {/* Grid background with neon effect */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] z-0"></div>
-      
-      {/* Background elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-        <div className="absolute -top-20 -left-20 w-80 h-80 bg-blue-600/20 rounded-full filter blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/2 -right-32 w-96 h-96 bg-purple-600/20 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '2s', animationDuration: '8s' }}></div>
-      </div>
-      
-      {/* Dashboard Header */}
-      <div className="relative z-10 max-w-6xl mx-auto mb-10 mt-15">
-        <div className="relative mb-8">
-          <div className="absolute -inset-1 bg-gradient-to-r from-white to-red-600 rounded-lg blur opacity-25 -z-10"></div>
-          <div className="relative bg-black/30 backdrop-blur-xl border border-white/10 p-6 rounded-2xl shadow-2xl">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 md:mb-0 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-purple-300">
-                Control Center
-              </h1>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse"></div>
-                <span className="text-green-400 text-sm">System Online</span>
-              </div>
-            </div>
+    <AdminLayout>
+      <div className="space-y-6">
+        {/* Welcome Section with Date/Time */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white p-6 shadow-2xl">
+          <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white/10"></div>
+          <div className="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-white/10 -mb-10 -ml-10"></div>
+          
+          <div className="relative z-10">
+            <h1 className="text-3xl font-bold">Welcome to Bassline Admin</h1>
+            <p className="mt-2 opacity-80">Manage your music venues and content efficiently.</p>
             
-            {/* Dashboard Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-xl hover:border-cyan-500/50 transition-all duration-300">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium text-white/90">Total Articles</h3>
-                  <div className="bg-blue-500/20 p-2 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                    </svg>
-                  </div>
+            <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-medium opacity-80">Current Date & Time</p>
+                <div className="mt-1">
+                  <p className="text-xl">{currentDate}</p>
+                  <p className="text-2xl font-mono tracking-wider">{currentTime}</p>
                 </div>
-                <p className="text-3xl font-semibold text-white mt-2">{dashboardData.totalArticles}</p>
-                <p className="text-sm text-blue-300 mt-1">+2 this week</p>
               </div>
               
-              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-xl hover:border-purple-500/50 transition-all duration-300">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium text-white/90">Recent Activity</h3>
-                  <div className="bg-purple-500/20 p-2 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                </div>
-                <p className="text-xl font-semibold text-white mt-2">{dashboardData.recentActivity}</p>
-                <p className="text-sm text-purple-300 mt-1">Last updated 2h ago</p>
+              <div className="flex items-center mt-4 sm:mt-0">
+                <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse mr-2"></div>
+                <span>System Online</span>
               </div>
-            </div>
-            
-            {/* Navigation Tabs */}
-            <div className="flex overflow-x-auto space-x-4 pb-2 mt-4">
-              <button 
-                onClick={() => setActiveTab("articles")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2 
-                ${activeTab === "articles" 
-                  ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-600/20" 
-                  : "bg-white/5 text-white/70 hover:bg-white/10"}`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-                Articles
-              </button>
-              <button 
-                onClick={() => setActiveTab("analytics")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2 
-                ${activeTab === "analytics" 
-                  ? "bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-600/20" 
-                  : "bg-white/5 text-white/70 hover:bg-white/10"}`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                Analytics
-              </button>
-              <button 
-                onClick={() => setActiveTab("settings")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2 
-                ${activeTab === "settings" 
-                  ? "bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-lg shadow-cyan-600/20" 
-                  : "bg-white/5 text-white/70 hover:bg-white/10"}`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                Settings
-              </button>
             </div>
           </div>
         </div>
 
-        {activeTab === "articles" && (
-          <>
-            {/* Article Form */}
-            <div className="mb-6 relative">
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur opacity-75 -z-10 group-hover:opacity-100 transition duration-1000"></div>
-              <div className="relative bg-black/30 backdrop-blur-xl border border-white/10 p-6 rounded-xl shadow-xl">
-                <h2 className="text-xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-300 flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                  </svg>
-                  {editId ? "Edit Article" : "Create New Article"}
-                </h2>
-                <div className="flex flex-col space-y-4">
-                  <input
-                    type="text"
-                    name="title"
-                    placeholder="Title"
-                    value={form.title}
-                    onChange={handleChange}
-                    className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-all duration-300"
-                  />
-                  <textarea
-                    name="description"
-                    placeholder="Description"
-                    value={form.description}
-                    onChange={handleChange}
-                    className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 resize-none transition-all duration-300"
-                    rows={3}
-                  />
-                  <input
-                    type="text"
-                    name="location"
-                    placeholder="Location"
-                    value={form.location}
-                    onChange={handleChange}
-                    className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-all duration-300"
-                  />
-                  {editId ? (
-                    <div className="flex space-x-3">
-                      <button
-                        onClick={handleUpdate}
-                        disabled={isLoading}
-                        className="relative group bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-blue-400 hover:to-blue-500 transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 flex items-center justify-center"
-                      >
-                        {isLoading ? (
-                          <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <>
-                            <span>Update</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-                            </svg>
-                          </>
-                        )}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setEditId(null);
-                          setForm({ title: "", description: "", location: "" });
-                        }}
-                        disabled={isLoading}
-                        className="bg-white/5 border border-white/10 text-white px-6 py-3 rounded-lg hover:bg-white/10 transition-all duration-300"
-                      >
-                        Cancel
-                      </button>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {loading ? (
+            <div className="col-span-4 text-center text-gray-500">Loading...</div>
+          ) : (
+            statsData.map((stat, index) => (
+              <div key={index} className="relative overflow-hidden group">
+                <div className={`absolute inset-0 bg-gradient-to-r ${stat.bgGradient} rounded-xl opacity-80 group-hover:opacity-100 transition-opacity duration-300`}></div>
+                
+                {/* Decorative Elements */}
+                <div className="absolute bottom-0 right-0 h-16 w-16 rounded-tl-full bg-white/10"></div>
+                <div className="absolute top-0 left-0 h-8 w-8 rounded-br-full bg-white/10"></div>
+                
+                <div className="relative p-6 text-white">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium opacity-90">{stat.title}</p>
+                      <p className="text-3xl font-bold mt-1">{stat.value}</p>
                     </div>
-                  ) : (
-                    <button
-                      onClick={handleAdd}
-                      disabled={isLoading}
-                      className="relative group bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-3 rounded-lg hover:from-cyan-400 hover:to-blue-400 transition-all duration-300 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 flex items-center justify-center"
-                    >
-                      {isLoading ? (
-                        <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      ) : (
-                        <>
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                          </svg>
-                          <span>Add Article</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Articles List */}
-            <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-xl blur opacity-75 -z-10 group-hover:opacity-100 transition duration-1000"></div>
-              <div className="relative bg-black/30 backdrop-blur-xl border border-white/10 p-6 rounded-xl shadow-xl">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-blue-300 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-                    </svg>
-                    Existing Articles
-                  </h2>
-                  <span className="text-sm text-white/50">Total: {articles.length}</span>
+                    <div className="p-3 rounded-full bg-white/20">
+                      {stat.icon}
+                    </div>
+                  </div>
                 </div>
                 
-                {articles.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white/30 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                    <p className="text-white/70 text-lg">No articles available.</p>
-                    <button className="mt-4 px-4 py-2 bg-white/10 text-white/80 rounded-lg hover:bg-white/20 transition-all duration-300 flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                      </svg>
-                      <span>Create your first article</span>
-                    </button>
+                {/* Hover effect */}
+                <div className="absolute inset-0 border-2 border-white/0 rounded-xl transition-all duration-300 group-hover:border-white/20 pointer-events-none"></div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Main Content Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Recent Venues Section */}
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
+            <div className="bg-gradient-to-r from-red-50 to-red-100 px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-800 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                </svg>
+                Recent Venues
+              </h2>
+            </div>
+            
+            <div className="divide-y divide-gray-100">
+              {recentActivity.map((activity) => (
+                <div key={activity.id} className="p-4 flex items-start hover:bg-gray-50 transition-colors">
+                  <div className={`flex-shrink-0 rounded-full p-2 ${
+                    activity.type === 'venue' ? 'bg-blue-100 text-blue-600' :
+                    activity.type === 'article' ? 'bg-purple-100 text-purple-600' :
+                    activity.type === 'user' ? 'bg-green-100 text-green-600' :
+                    'bg-yellow-100 text-yellow-600'
+                  }`}>
+                    {activity.icon}
                   </div>
-                ) : (
-                  <ul className="space-y-4">
-                    {articles.map((article) => (
-                      <li
-                        key={article.id}
-                        className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-5 transition-all duration-300 hover:border-cyan-500/30 hover:bg-white/10 relative group"
-                      >
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-lg text-white">{article.title}</h3>
-                              <span className="text-xs text-white/40 hidden sm:inline"># {article.id}</span>
-                            </div>
-                            <p className="text-white/70 my-2">{article.description}</p>
-                            <div className="flex flex-wrap gap-3 items-center mt-3">
-                              <div className="flex items-center text-sm text-white/60">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 text-cyan-400" viewBox="0 0 20 20" fill="currentColor">
-                                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                                </svg>
-                                <span>{article.location}</span>
-                              </div>
-                              {article.createdAt && (
-                                <div className="flex items-center text-sm text-white/40">
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 text-purple-400" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                                  </svg>
-                                  <span>{article.createdAt}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleEdit(article)}
-                              disabled={isLoading}
-                              className="bg-white/5 border border-white/10 text-white px-4 py-2 rounded-lg hover:bg-white/10 transition-all duration-300 flex items-center gap-2"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                              </svg>
-                              <span className="hidden sm:inline">Edit</span>
-                            </button>
-                            <button
-                              onClick={() => handleDelete(article.id)}
-                              disabled={isLoading}
-                              className="bg-white/5 border border-white/10 text-white px-4 py-2 rounded-lg hover:bg-red-500/20 hover:border-red-500/30 transition-all duration-300 flex items-center gap-2"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                              </svg>
-                              <span className="hidden sm:inline">Delete</span>
-                            </button>
-                          </div>
-                        </div>
-                        {/* Hover effect */}
-                        <div className="absolute -inset-px bg-gradient-to-r from-cyan-400/10 via-blue-400/10 to-purple-400/10 opacity-0 group-hover:opacity-100 rounded-xl blur transition-all duration-500"></div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                  <div className="ml-4 flex-1">
+                    <div className="flex justify-between">
+                      <p className="text-sm font-medium text-gray-900">{activity.name}</p>
+                      <p className="text-xs text-gray-500">{activity.time}</p>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-600">
+                      <span className="font-medium">{activity.user}</span> {activity.action} this {activity.type}
+                    </p>
+                  </div>
+                  <button className="ml-4 text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
             </div>
-          </>
-        )}
-        
-        {activeTab === "analytics" && (
-          <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-xl blur opacity-75 -z-10"></div>
-            <div className="relative bg-black/30 backdrop-blur-xl border border-white/10 p-6 rounded-xl shadow-xl">
-              <h2 className="text-xl font-semibold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-blue-300">Analytics Dashboard</h2>
-              <div className="flex items-center justify-center h-64 text-white/50">
-                <p className="text-center">Analytics features coming soon</p>
-              </div>
+            
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+              <button className="w-full text-center text-sm font-medium text-red-600 hover:text-red-700 transition-colors">
+                View All Activity
+              </button>
             </div>
           </div>
-        )}
-        
-        {activeTab === "settings" && (
-          <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl blur opacity-75 -z-10"></div>
-            <div className="relative bg-black/30 backdrop-blur-xl border border-white/10 p-6 rounded-xl shadow-xl">
-              <h2 className="text-xl font-semibold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-300">Settings</h2>
-              <div className="flex items-center justify-center h-64 text-white/50">
-                <p className="text-center">Settings configuration coming soon</p>
-              </div>
+
+          {/* Quick Actions Section */}
+          <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
+            <div className="bg-gradient-to-r from-red-50 to-red-100 px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-800 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h8V3a1 1 0 112 0v1h1a2 2 0 012 2v11a2 2 0 01-2 2H3a2 2 0 01-2-2V6a2 2 0 012-2h1V3a1 1 0 011-1zm14 5H1v11a1 1 0 001 1h16a1 1 0 001-1V7z" clipRule="evenodd" />
+                </svg>
+                Quick Actions
+              </h2>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Action Cards */}
+              <Link href="/dashboard/venues" className="block group">
+                <div className="border border-gray-200 rounded-lg p-4 transition-all duration-300 hover:shadow-md hover:border-red-200 bg-gradient-to-r hover:from-red-50 hover:to-white">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 p-3 rounded-lg bg-red-100 text-red-600 group-hover:bg-red-200 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-base font-medium text-gray-900 group-hover:text-red-600 transition-colors">Manage Venues</h3>
+                      <p className="mt-1 text-sm text-gray-500">Add, edit or remove venues</p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/dashboard/articles" className="block group">
+                <div className="border border-gray-200 rounded-lg p-4 transition-all duration-300 hover:shadow-md hover:border-red-200 bg-gradient-to-r hover:from-red-50 hover:to-white">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 p-3 rounded-lg bg-red-100 text-red-600 group-hover:bg-red-200 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                      </svg>
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-base font-medium text-gray-900 group-hover:text-red-600 transition-colors">Manage Articles</h3>
+                      <p className="mt-1 text-sm text-gray-500">Create and publish new content</p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/dashboard/users" className="block group">
+                <div className="border border-gray-200 rounded-lg p-4 transition-all duration-300 hover:shadow-md hover:border-red-200 bg-gradient-to-r hover:from-red-50 hover:to-white">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 p-3 rounded-lg bg-red-100 text-red-600 group-hover:bg-red-200 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-base font-medium text-gray-900 group-hover:text-red-600 transition-colors">User Management</h3>
+                      <p className="mt-1 text-sm text-gray-500">Manage user accounts and permissions</p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </div>
+            
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+              <Link href="/dashboard/settings" className="block w-full text-center text-sm font-medium text-red-600 hover:text-red-700 transition-colors">
+                View All Settings
+              </Link>
             </div>
           </div>
-        )}
-        
-        {/* Footer with version info */}
-        <div className="mt-8 text-center text-xs text-white/30">
-          <p>Dashboard v2.0 • Last updated: April 18, 2025</p>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 text-center text-xs text-gray-500">
+          <p>Bassline Admin Dashboard • Last updated: April 20, 2025</p>
         </div>
       </div>
-      
-      {/* Add this at the end of your JSX */}
-      <style jsx global>{`
-        .bg-grid-pattern {
-          background-size: 30px 30px;
-          background-image: 
-            linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-        }
-      `}</style>
-    </main>
+    </AdminLayout>
   );
 }

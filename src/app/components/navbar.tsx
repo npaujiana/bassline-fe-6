@@ -60,15 +60,15 @@ export default function Navbar() {
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${
       scrolled 
-        ? "bg-black/90 backdrop-blur-lg py-2 shadow-[0_0_15px_rgba(255,59,59,0.3)]" 
-        : "bg-black/80 backdrop-blur-md py-4"
+        ? "bg-red-950/90 backdrop-blur-lg py-2 shadow-[0_2px_20px_rgba(255,0,0,0.4)]" 
+        : "bg-red-900/80 backdrop-blur-md py-4"
     }`}>
       <div className="container mx-auto flex justify-between items-center px-4">
-        {/* Logo with futuristic design */}
+        {/* Logo with enhanced red/white design */}
         <Link href="/" className="group flex items-center space-x-2">
           <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-400 rounded-full opacity-70 group-hover:opacity-100 blur group-hover:animate-pulse transition-all duration-300"></div>
-            <div className="relative bg-black rounded-full p-1.5">
+            <div className="absolute -inset-1 bg-gradient-to-r from-red-700 to-red-500 rounded-full opacity-80 group-hover:opacity-100 blur-sm group-hover:animate-pulse transition-all duration-300"></div>
+            <div className="relative bg-white/10 rounded-full p-1.5 border border-white/50">
               <img
                 src="/images/favicon.ico"
                 alt="BASSLINE"
@@ -77,24 +77,23 @@ export default function Navbar() {
             </div>
           </div>
           <span className="text-white font-bold text-xl tracking-wider relative">
-            <span className="absolute -inset-1 bg-gradient-to-r from-red-500 to-red-300 opacity-50 blur"></span>
+            <span className="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-400 opacity-50 blur"></span>
             <span className="relative">BASSLINE</span>
-            <span className="absolute top-full left-0 w-full h-0.5 bg-gradient-to-r from-red-500 via-transparent to-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
+            <span className="absolute top-full left-0 w-full h-0.5 bg-gradient-to-r from-white via-red-300 to-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></span>
           </span>
         </Link>
 
-        {/* Digital Clock */}
-        <div className="hidden lg:flex absolute left-1/2 transform -translate-x-1/2 bg-black/40 px-4 py-1 rounded-full backdrop-blur-sm border border-red-500/20 shadow-[0_0_5px_rgba(255,59,59,0.5)]">
-          <span className="text-red-400 font-mono text-sm tracking-widest">
+        {/* Digital Clock with enhanced red/white theme */}
+        <div className="hidden lg:flex absolute left-1/2 transform -translate-x-1/2 bg-red-950/60 px-4 py-1 rounded-full backdrop-blur-sm border border-white/30 shadow-[0_0_10px_rgba(255,0,0,0.6)]">
+          <span className="text-white font-mono text-sm tracking-widest">
             {timeString}
           </span>
         </div>
 
-        {/* Desktop Menu */}
-        <div className="hidden md:flex space-x-2">
+        {/* Desktop Menu with enhanced red/white theme */}
+        <div className="hidden md:flex space-x-4">
           {[
             { label: "Home", path: "/" },
-            { label: "About", path: "/about" },
             { label: "Recommendations", path: "/recommendations" }
           ].map((item) => (
             <Link 
@@ -102,56 +101,56 @@ export default function Navbar() {
               href={item.path}
               className={`relative flex justify-center px-4 py-2 text-sm transition-all duration-300 overflow-hidden group ${
                 isActive(item.path) 
-                  ? "text-red-400" 
-                  : "text-white hover:text-red-300"
+                  ? "text-white font-medium" 
+                  : "text-white/80 hover:text-white"
               }`}
             >
               <span className="relative z-10">{item.label}</span>
               {isActive(item.path) && (
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-red-500"></span>
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white shadow-[0_0_5px_rgba(255,255,255,0.7)]"></span>
               )}
-              <span className="absolute inset-0 bg-gradient-to-r from-red-800/40 to-red-600/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-0"></span>
-              <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-red-500 group-hover:w-full transition-all duration-300 ease-in-out"></span>
+              <span className="absolute inset-0 bg-gradient-to-r from-red-700/60 to-red-600/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-0"></span>
+              <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white group-hover:w-full transition-all duration-300 ease-in-out"></span>
             </Link>
           ))}
           
-          {/* Conditionally render login button or logout button */}
+          {/* Conditionally render login button or logout button with enhanced red/white theme */}
           {isAuthenticated ? (
             <button 
               onClick={handleLogout}
-              className="relative w-[18%] ml-2 px-6 py-1.5 bg-gradient-to-r from-red-700 to-red-500 text-white rounded-full overflow-hidden group hover:shadow-[0_0_10px_rgba(255,59,59,0.3)] transition-all duration-300"
+              className="relative w-20 ml-2 px-6 py-1.5 bg-gradient-to-r from-white to-white/90 text-red-700 font-medium rounded-full overflow-hidden group hover:shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all duration-300"
             >
               <span className="absolute inset-0 flex items-center justify-center w-full h-full text-sm font-medium tracking-wider z-10">
                 Logout
               </span>
-              <span className="absolute inset-0 scale-x-0 group-hover:scale-100 transition-transform duration-500 origin-left bg-gradient-to-r from-red-600/80 via-red-500/80 to-red-400/80"></span>
-              <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_50%_120%,rgba(255,69,58,0.5),transparent_80%)]"></span>
+              <span className="absolute inset-0 scale-x-0 group-hover:scale-100 transition-transform duration-500 origin-left bg-gradient-to-r from-white/90 via-red-100 to-white/90"></span>
+              <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.8),transparent_80%)]"></span>
             </button>
           ) : (
             <Link 
               href="/login" 
-              className="relative ml-2 px-6 py-1.5 bg-gradient-to-r from-red-700 to-red-500 text-white rounded-full overflow-hidden group hover:shadow-[0_0_10px_rgba(255,59,59,0.3)] transition-all duration-300"
+              className="relative ml-2 px-6 py-1.5 bg-gradient-to-r from-white to-white/90 text-red-700 font-medium rounded-full overflow-hidden group hover:shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all duration-300"
             >
               <span className="absolute inset-0 flex items-center justify-center w-full h-full text-sm font-medium tracking-wider z-10">
                 Login
               </span>
-              <span className="absolute inset-0 scale-x-0 group-hover:scale-100 transition-transform duration-500 origin-left bg-gradient-to-r from-red-600/80 via-red-500/80 to-red-400/80"></span>
-              <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_50%_120%,rgba(255,69,58,0.5),transparent_80%)]"></span>
+              <span className="absolute inset-0 scale-x-0 group-hover:scale-100 transition-transform duration-500 origin-left bg-gradient-to-r from-white/90 via-red-100 to-white/90"></span>
+              <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.8),transparent_80%)]"></span>
             </Link>
           )}
         </div>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Menu Button with enhanced red/white theme */}
         <button
           onClick={toggleMobileMenu}
-          className="md:hidden relative bg-black/30 p-2 rounded-full backdrop-blur-sm"
+          className="md:hidden relative bg-white/10 p-2 rounded-full backdrop-blur-sm border border-white/30"
           aria-label="Toggle mobile menu"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-red-400/20 rounded-full opacity-0 hover:opacity-100 transition-opacity duration-300 blur"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-red-600/30 to-white/20 rounded-full opacity-0 hover:opacity-100 transition-opacity duration-300 blur"></div>
           {isMobileMenuOpen ? (
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-red-400"
+              className="h-5 w-5 text-white"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -166,7 +165,7 @@ export default function Navbar() {
           ) : (
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-red-400"
+              className="h-5 w-5 text-white"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -182,14 +181,13 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Menu - Futuristic Dropdown */}
+      {/* Mobile Menu - Futuristic Dropdown with enhanced red/white theme */}
       {isMobileMenuOpen && (
         <div className="md:hidden transform transition-all duration-300 ease-out mt-4">
-          <div className="bg-black/70 backdrop-blur-md border-t border-red-500/20 animate-slideDown shadow-[0_5px_15px_rgba(255,59,59,0.2)]">
+          <div className="bg-gradient-to-b from-red-900/90 to-red-950/90 backdrop-blur-md border-t border-white/30 animate-slideDown shadow-[0_5px_20px_rgba(255,0,0,0.3)]">
             <div className="flex flex-col space-y-1 p-4">
               {[
                 { label: "Home", path: "/" },
-                { label: "About", path: "/about" },
                 { label: "Recommendations", path: "/recommendations" }
               ].map((item) => (
                 <Link 
@@ -197,8 +195,8 @@ export default function Navbar() {
                   href={item.path}
                   className={`px-4 py-3 rounded-lg transition-all duration-300 ${
                     isActive(item.path) 
-                      ? "bg-gradient-to-r from-red-800/40 to-red-600/40 text-red-400 border-l-2 border-red-500" 
-                      : "text-white hover:bg-white/5 hover:text-red-300"
+                      ? "bg-white/20 text-white border-l-2 border-white" 
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
                   }`}
                 >
                   {item.label}
@@ -207,14 +205,14 @@ export default function Navbar() {
               {isAuthenticated ? (
                 <button 
                   onClick={handleLogout}
-                  className="mt-2 px-4 py-3 bg-gradient-to-r from-red-700 to-red-500 text-white rounded-lg font-medium text-center hover:from-red-600 hover:to-red-400 transition-all duration-300 shadow-sm hover:shadow-[0_0_10px_rgba(255,59,59,0.3)]"
+                  className="mt-3 px-4 py-3 bg-white text-red-700 rounded-lg font-medium text-center hover:bg-white/90 transition-all duration-300 shadow-md hover:shadow-[0_0_15px_rgba(255,255,255,0.5)]"
                 >
                   Logout
                 </button>
               ) : (
                 <Link 
                   href="/login"
-                  className="mt-2 px-4 py-3 bg-gradient-to-r from-red-700 to-red-500 text-white rounded-lg font-medium text-center hover:from-red-600 hover:to-red-400 transition-all duration-300 shadow-sm hover:shadow-[0_0_10px_rgba(255,59,59,0.3)]"
+                  className="mt-3 px-4 py-3 bg-white text-red-700 rounded-lg font-medium text-center hover:bg-white/90 transition-all duration-300 shadow-md hover:shadow-[0_0_15px_rgba(255,255,255,0.5)]"
                 >
                   Login / Register
                 </Link>
@@ -223,6 +221,9 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Decorative accent line at bottom of navbar */}
+      <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
     </nav>
   );
 }
