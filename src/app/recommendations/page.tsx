@@ -61,13 +61,13 @@ export default function RecommendationsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-white p-8 md:p-12 relative overflow-hidden">
+    <main className="min-h-screen bg-secondary-500 p-8 md:p-12 relative overflow-hidden">
       {/* Background elements */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-700/20 via-transparent to-transparent"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary-700/20 via-transparent to-transparent"></div>
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-red-600/30 rounded-full filter blur-3xl animate-pulse"></div>
-        <div className="absolute top-2/3 -right-20 w-96 h-96 bg-red-600/20 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '2s', animationDuration: '8s' }}></div>
-        <div className="absolute top-1/3 left-1/2 w-64 h-64 bg-red-400/10 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '1s', animationDuration: '10s' }}></div>
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-primary-600/30 rounded-full filter blur-3xl animate-pulse"></div>
+        <div className="absolute top-2/3 -right-20 w-96 h-96 bg-primary-600/20 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '2s', animationDuration: '8s' }}></div>
+        <div className="absolute top-1/3 left-1/2 w-64 h-64 bg-tertiary-500/20 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '1s', animationDuration: '10s' }}></div>
       </div>
       
       {/* Grid overlay */}
@@ -75,10 +75,10 @@ export default function RecommendationsPage() {
       
       <div className="container mx-auto my-15 relative z-10">
         <div className="relative mb-16">
-          <h1 className="text-4xl md:text-7xl font-bold text-center text-red-500 tracking-tight">
+          <h1 className="text-4xl md:text-7xl font-bold text-center text-primary-700 tracking-tight">
             Featured Articles
           </h1>
-          <p className="text-center text-red-400 mt-4 max-w-2xl mx-auto">
+          <p className="text-center text-primary-600 mt-4 max-w-2xl mx-auto">
             Discover the latest in nightlife, music venues, events, and more from our expert writers
           </p>
         </div>
@@ -86,21 +86,21 @@ export default function RecommendationsPage() {
         {isLoading ? (
           <div className="flex justify-center items-center min-h-[40vh]">
             <div className="text-center">
-              <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-red-500 border-t-transparent"></div>
-              <p className="mt-4 text-red-500 text-lg">Loading articles...</p>
+              <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-primary-700 border-t-transparent"></div>
+              <p className="mt-4 text-primary-700 text-lg">Loading articles...</p>
             </div>
           </div>
         ) : error ? (
           <div className="flex justify-center items-center min-h-[40vh]">
-            <div className="text-center bg-white/10 backdrop-blur-sm p-8 rounded-xl border border-red-500/20 max-w-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 text-red-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="text-center bg-secondary-500/10 backdrop-blur-sm p-8 rounded-xl border border-primary-700/20 max-w-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 text-primary-700 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
-              <h3 className="text-red-500 text-xl font-semibold mb-2">Error Loading Articles</h3>
-              <p className="text-red-400">{error}</p>
+              <h3 className="text-primary-700 text-xl font-semibold mb-2">Error Loading Articles</h3>
+              <p className="text-primary-600">{error}</p>
               <button 
                 onClick={() => window.location.reload()} 
-                className="mt-4 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-lg text-red-500 transition-colors"
+                className="mt-4 px-4 py-2 bg-primary-700/20 hover:bg-primary-700/30 border border-primary-700/30 rounded-lg text-primary-700 transition-colors"
               >
                 Try Again
               </button>
@@ -108,12 +108,12 @@ export default function RecommendationsPage() {
           </div>
         ) : articles.length === 0 ? (
           <div className="flex justify-center items-center min-h-[40vh]">
-            <div className="text-center bg-white/10 backdrop-blur-sm p-8 rounded-xl border border-red-500/20 max-w-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 text-red-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="text-center bg-secondary-500/10 backdrop-blur-sm p-8 rounded-xl border border-primary-700/20 max-w-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 text-primary-700 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
               </svg>
-              <h3 className="text-red-500 text-xl font-semibold mb-2">No Articles Available</h3>
-              <p className="text-red-400">There are no published articles at the moment. Check back later!</p>
+              <h3 className="text-primary-700 text-xl font-semibold mb-2">No Articles Available</h3>
+              <p className="text-primary-600">There are no published articles at the moment. Check back later!</p>
             </div>
           </div>
         ) : (
@@ -121,7 +121,7 @@ export default function RecommendationsPage() {
             {articles.map((article) => (
               <div
                 key={article.id}
-                className="group bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden transition-all duration-500 hover:scale-[1.03] hover:border-cyan-500/50"
+                className="group bg-secondary-500/5 backdrop-blur-xl rounded-2xl border border-secondary-500/10 overflow-hidden transition-all duration-500 hover:scale-[1.03] hover:border-tertiary-500/50"
               >
                 <div className="relative">
                   <img
@@ -136,7 +136,7 @@ export default function RecommendationsPage() {
                   />
                   <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/70 to-transparent">
                     <div className="flex items-center justify-between">
-                      <span className="text-white text-sm font-medium">
+                      <span className="text-secondary-500 text-sm font-medium">
                         Article
                       </span>
                       <span className={`px-2 py-1 rounded-full text-xs ${
@@ -150,15 +150,15 @@ export default function RecommendationsPage() {
                   </div>
                 </div>
                 <div className="p-6 relative">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400/10 to-purple-400/10 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-accent-400/10 to-primary-600/10 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="relative">
-                    <h2 className="text-2xl font-semibold mb-3 text-red-500">{article.title}</h2>
-                    <p className="text-red-500 mb-5 line-clamp-3">{getContentPreview(article.content)}</p>
+                    <h2 className="text-2xl font-semibold mb-3 text-primary-700">{article.title}</h2>
+                    <p className="text-primary-600 mb-5 line-clamp-3">{getContentPreview(article.content)}</p>
                     
                     <div className="flex flex-col gap-3 mb-4">
                       {/* Author and date info */}
-                      <div className="flex items-center text-sm text-red-500">
-                        <CalendarDaysIcon className="h-4 w-4 mr-1.5 text-red-500" />
+                      <div className="flex items-center text-sm text-primary-600">
+                        <CalendarDaysIcon className="h-4 w-4 mr-1.5 text-primary-600" />
                         <span>{formatDate(article.published_at || article.created_at)}</span>
                         {article.created_by && (
                           <>
@@ -170,11 +170,11 @@ export default function RecommendationsPage() {
                     </div>
                     
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-red-500">
+                      <span className="text-xs text-primary-600">
                         {article.status === 'published' ? 'Published' : 'Draft'}
                       </span>
                       <Link href={`/articles/${article.id}`}>
-                        <button className="px-4 py-2 bg-cyan-500/20 hover:bg-red-500/30 border border-cyan-500/30 hover:border-red-500/50 rounded-lg text-red-500 text-sm transition-colors duration-300 flex items-center gap-2">
+                        <button className="px-4 py-2 bg-tertiary-500/20 hover:bg-primary-700/30 border border-tertiary-500/30 hover:border-primary-700/50 rounded-lg text-primary-700 text-sm transition-colors duration-300 flex items-center gap-2">
                           <span>Read More</span>
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -193,7 +193,7 @@ export default function RecommendationsPage() {
         {articles.length > 0 && (
           <div className="mt-12 text-center">
             <Link href="/articles">
-              <button className="px-6 py-3 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-lg text-red-500 font-medium transition-colors duration-300 flex items-center gap-2 mx-auto">
+              <button className="px-6 py-3 bg-primary-700/20 hover:bg-primary-700/30 border border-primary-700/30 rounded-lg text-primary-700 font-medium transition-colors duration-300 flex items-center gap-2 mx-auto">
                 <span>View All Articles</span>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />

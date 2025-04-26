@@ -115,24 +115,24 @@ export default function MapView({ searchQuery }: MapViewProps) {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-white flex items-center justify-center">
-        <p className="text-red-600 text-xl">Loading location information...</p>
+      <div className="fixed inset-0 bg-secondary flex items-center justify-center">
+        <p className="text-primary text-xl">Loading location information...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="fixed inset-0 bg-white flex items-center justify-center">
-        <p className="text-red-600 text-xl">{error}</p>
+      <div className="fixed inset-0 bg-secondary flex items-center justify-center">
+        <p className="text-primary text-xl">{error}</p>
       </div>
     );
   }
 
   if (locations.length === 0) {
     return (
-      <div className="fixed inset-0 bg-white flex items-center justify-center">
-        <p className="text-gray-600 text-xl">No locations to display. Please enter a search query.</p>
+      <div className="fixed inset-0 bg-secondary flex items-center justify-center">
+        <p className="text-accent text-xl">No locations to display. Please enter a search query.</p>
       </div>
     );
   }
@@ -179,12 +179,12 @@ export default function MapView({ searchQuery }: MapViewProps) {
         <button
           onClick={handleMyLocationClick}
           aria-label="My Location"
-          className="fixed top-20 right-4 z-50 bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-colors duration-300 flex items-center justify-center"
+          className="fixed top-20 right-4 z-50 bg-secondary shadow-lg rounded-full p-3 hover:bg-secondary-300 transition-colors duration-300 flex items-center justify-center"
           title="Go to My Location"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 text-blue-600"
+            className="h-6 w-6 text-primary"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -195,20 +195,20 @@ export default function MapView({ searchQuery }: MapViewProps) {
         </button>
       </div>
 
-      <div className="flex-1 bg-white rounded-t-3xl -mt-6 z-10 shadow-lg overflow-y-auto p-5">
-        <h1 className="text-xl font-bold text-gray-900 mb-4">Search Results for "{searchQuery}"</h1>
+      <div className="flex-1 bg-secondary rounded-t-3xl -mt-6 z-10 shadow-lg overflow-y-auto p-5">
+        <h1 className="text-xl font-bold text-accent mb-4">Search Results for "{searchQuery}"</h1>
         {locations.map((loc, idx) => (
-          <div key={idx} className="mb-4 border-b border-gray-200 pb-3">
-            <h2 className="font-semibold">{loc.name}</h2>
-            <p className="text-gray-600 text-sm">{loc.formatted_address}</p>
-            <p className="text-sm">Rating: {loc.rating ?? "N/A"}</p>
+          <div key={idx} className="mb-4 border-b border-accent-200 pb-3">
+            <h2 className="font-semibold text-accent">{loc.name}</h2>
+            <p className="text-accent-600 text-sm">{loc.formatted_address}</p>
+            <p className="text-sm text-accent-700">Rating: {loc.rating ?? "N/A"}</p>
             {loc.tiktok_videos.length > 0 && (
               <div className="mt-2">
-                <h3 className="font-semibold">TikTok Videos:</h3>
+                <h3 className="font-semibold text-accent">TikTok Videos:</h3>
                 <ul className="list-disc list-inside text-sm max-h-40 overflow-y-auto">
                   {loc.tiktok_videos.map((video) => (
                     <li key={video.video_id}>
-                      <a href={video.video_url} target="_blank" rel="noopener noreferrer" className="text-red-600 underline">
+                      <a href={video.video_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">
                         {video.caption || "View Video"}
                       </a> by @{video.author_username} ({video.likes_count} likes, {video.views_count} views)
                     </li>

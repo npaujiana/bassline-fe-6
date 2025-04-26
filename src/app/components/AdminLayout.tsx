@@ -142,14 +142,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex h-screen bg-secondary">
       {/* Desktop Sidebar */}
-      <div className={`hidden lg:flex flex-col w-64 bg-gradient-to-b from-red-500 to-red-700 text-white shadow-xl transition-all duration-300 z-30`}>
+      <div className={`hidden lg:flex flex-col w-64 bg-primary text-secondary shadow-xl transition-all duration-300 z-30`}>
         {/* Logo area */}
-        <div className="flex items-center justify-center h-16 border-b border-white/10">
+        <div className="flex items-center justify-center h-16 border-b border-secondary/10">
           <div className="px-4 py-6">
-            <div className="text-2xl font-bold text-white flex items-center">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-2">
+            <div className="text-2xl font-bold text-secondary flex items-center">
+              <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center mr-2">
                 <img
                   src="/images/favicon.ico"
                   alt="BASSLINE"
@@ -172,11 +172,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   key={item.name}
                   className={`flex items-center px-4 py-3 transition-all duration-200 ease-in-out rounded-lg group ${
                     isActive 
-                      ? 'bg-white text-red-600' 
-                      : 'text-white hover:bg-white/10'
+                      ? 'bg-secondary text-primary' 
+                      : 'text-secondary hover:bg-secondary/10'
                   }`}
                 >
-                  <span className={`mr-3 transition-all ${isActive ? 'text-red-600' : 'text-white/70 group-hover:text-white'}`}>
+                  <span className={`mr-3 transition-all ${isActive ? 'text-primary' : 'text-secondary/70 group-hover:text-secondary'}`}>
                     {item.icon}
                   </span>
                   <span className="font-medium">{item.name}</span>
@@ -194,19 +194,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         
         {/* User profile */}
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-secondary/10">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-white">Admin User</p>
-              <p className="text-xs text-white/70">admin@bassline.com</p>
+              <p className="text-sm font-medium text-secondary">Admin User</p>
+              <p className="text-xs text-secondary/70">admin@bassline.com</p>
             </div>
             <div className="ml-auto">
-              <button className="p-1 text-white/70 hover:text-white transition-colors">
+              <button className="p-1 text-secondary/70 hover:text-secondary transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
                 </svg>
@@ -220,12 +220,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className={`fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMobileMenuOpen(false)}></div>
       
       {/* Mobile Sidebar */}
-      <div className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-b from-red-500 to-red-700 text-white shadow-xl transition-transform duration-300 ease-in-out transform z-50 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:hidden`}>
+      <div className={`fixed inset-y-0 left-0 w-64 bg-primary text-secondary shadow-xl transition-transform duration-300 ease-in-out transform z-50 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:hidden`}>
         {/* Mobile Logo area */}
-        <div className="flex items-center justify-center h-16 border-b border-white/10">
+        <div className="flex items-center justify-center h-16 border-b border-secondary/10">
           <div className="px-4 py-6">
-            <div className="text-2xl font-bold text-white flex items-center">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-2">
+            <div className="text-2xl font-bold text-secondary flex items-center">
+              <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center mr-2">
                 <img
                   src="/images/favicon.ico"
                   alt="BASSLINE"
@@ -248,11 +248,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   key={item.name}
                   className={`flex items-center px-4 py-3 transition-all duration-200 ease-in-out rounded-lg group ${
                     isActive 
-                      ? 'bg-white text-red-600' 
-                      : 'text-white hover:bg-white/10'
+                      ? 'bg-secondary text-primary' 
+                      : 'text-secondary hover:bg-secondary/10'
                   }`}
                 >
-                  <span className={`mr-3 transition-all ${isActive ? 'text-red-600' : 'text-white/70 group-hover:text-white'}`}>
+                  <span className={`mr-3 transition-all ${isActive ? 'text-primary' : 'text-secondary/70 group-hover:text-secondary'}`}>
                     {item.icon}
                   </span>
                   <span className="font-medium">{item.name}</span>
@@ -270,30 +270,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         
         {/* Mobile User profile */}
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-secondary/10">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-white">Admin User</p>
-              <p className="text-xs text-white/70">admin@bassline.com</p>
+              <p className="text-sm font-medium text-secondary">Admin User</p>
+              <p className="text-xs text-secondary/70">admin@bassline.com</p>
             </div>
           </div>
+          <button 
+            onClick={handleLogout}
+            className="mt-4 w-full px-4 py-2 bg-tertiary text-secondary rounded-lg font-medium text-center hover:bg-tertiary-600 transition-colors duration-300"
+          >
+            Logout
+          </button>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Navigation */}
-        <header className="bg-white border-b border-gray-200 shadow-sm z-20">
-          <div className="px-4 py-3 flex justify-between items-center">
+        <header className="bg-secondary border-b border-tertiary/20 shadow-sm z-20">
+          <div className="px-4 py-[0.98rem] flex justify-between items-center">
             {/* Mobile menu button */}
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1"
+              className="lg:hidden text-tertiary hover:text-tertiary-700 focus:outline-none focus:ring-2 focus:ring-primary rounded p-1"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -301,22 +307,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
             
             {/* Page title - derived from active menu */}
-            <div className="text-lg font-semibold text-gray-800 lg:ml-4">
+            <div className="text-lg font-semibold text-tertiary-800 lg:ml-4">
               {activeMenu || "Dashboard"}
             </div>
             
             {/* Right side items */}
             <div className="flex items-center space-x-4">
               {/* Notification */}
-              <button className="text-gray-500 hover:text-gray-700 relative focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1">
+              <button className="text-tertiary hover:text-tertiary-700 relative focus:outline-none focus:ring-2 focus:ring-primary rounded p-1">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
-                <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+                <span className="absolute top-0 right-0 h-2 w-2 bg-primary rounded-full"></span>
               </button>
               
               {/* Help */}
-              <button className="text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1">
+              <button className="text-tertiary hover:text-tertiary-700 focus:outline-none focus:ring-2 focus:ring-primary rounded p-1">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -325,7 +331,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {/* Logout button */}
               <button 
                 onClick={handleLogout}
-                className="bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-1 rounded-full hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-1 text-sm font-medium"
+                className="bg-gradient-to-r from-primary to-primary-700 text-secondary px-4 py-1 rounded-full hover:from-primary-700 hover:to-primary-800 transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-1 text-sm font-medium"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -335,7 +341,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               
               {/* Mobile profile - only visible on smaller screens */}
               <div className="lg:hidden">
-                <button className="text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1">
+                <button className="text-tertiary hover:text-tertiary-700 focus:outline-none focus:ring-2 focus:ring-primary rounded p-1">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -346,15 +352,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
         
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50">
+        <main className="flex-1 overflow-y-auto bg-secondary/80">
           <div className="container mx-auto py-6 px-4">
             {children}
           </div>
         </main>
       </div>
       
-      {/* Futuristic Decorative Elements - absolute positioned elements for aesthetics */}
-      <div className="fixed bottom-4 right-4 w-12 h-12 bg-gradient-to-tr from-red-500 to-red-600 rounded-full shadow-lg flex items-center justify-center text-white z-30 cursor-pointer hover:scale-110 transition-transform">
+      {/* Decorative Elements */}
+      <div className="fixed bottom-4 right-4 w-12 h-12 bg-primary rounded-full shadow-lg flex items-center justify-center text-secondary z-30 cursor-pointer hover:scale-110 transition-transform">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
         </svg>
