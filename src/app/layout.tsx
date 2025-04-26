@@ -27,7 +27,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen bg-white relative overflow-x-hidden`} suppressHydrationWarning>
+      <body className={`${inter.className} min-h-screen bg-secondary relative overflow-x-hidden`} suppressHydrationWarning>
         <AuthSessionProvider>
           <AuthProvider>
             <LayoutWithNavbar>

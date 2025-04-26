@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -168,7 +167,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gradient-to-b from-white to-red-50">
+    <main className="flex items-center justify-center min-h-screen bg-secondary">
       <div className="container mx-auto px-4 py-6">
         <div className="mx-auto max-w-md md:max-w-2xl lg:max-w-4xl">
           <div className="text-center">
@@ -185,13 +184,13 @@ export default function Home() {
               </div>
             </div>
 
-            <h1 className="animate-glow mb-2 text-2xl sm:text-3xl font-bold text-red-600 md:text-4xl">
+            <h1 className="animate-glow mb-2 text-2xl sm:text-3xl font-bold text-primary md:text-4xl">
               BASSLINE
             </h1>
-            <p className="mb-4 text-sm sm:text-base text-red-500">
+            <p className="mb-4 text-sm sm:text-base text-tertiary">
               The City Never Sleeps, Neither Should You.
             </p>
-            <p className="mb-3 text-sm sm:text-base text-red-500 font-medium">
+            <p className="mb-3 text-sm sm:text-base text-tertiary font-medium">
               WHAT ARE YOU FEELING TONIGHT?
             </p>
 
@@ -208,14 +207,14 @@ export default function Home() {
                     value={searchQuery}
                     onChange={handleInputChange}
                     placeholder="Search location name..."
-                    className="w-full rounded-full border border-red-200 bg-white px-4 py-2 sm:px-5 sm:py-3 pr-10 sm:pr-12 text-red-600 shadow-md focus:ring-2 focus:ring-red-500 focus:outline-none text-sm sm:text-base"
+                    className="w-full rounded-full border border-accent-200 bg-secondary px-4 py-2 sm:px-5 sm:py-3 pr-10 sm:pr-12 text-tertiary shadow-md focus:ring-2 focus:ring-primary focus:outline-none text-sm sm:text-base"
                   />
                   <button
                     type="submit"
-                    className="absolute top-1/2 right-2 -translate-y-1/2 transform rounded-full bg-red-500 p-1.5 sm:p-2 text-white transition-colors duration-300 hover:bg-red-600"
+                    className="absolute top-1/2 right-2 -translate-y-1/2 transform rounded-full bg-primary p-1.5 sm:p-2 text-secondary transition-colors duration-300 hover:bg-primary-800"
                   >
                     {isSearching ? (
-                      <div className="h-4 w-4 sm:h-5 sm:w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="h-4 w-4 sm:h-5 sm:w-5 border-2 border-secondary-500 border-t-transparent rounded-full animate-spin"></div>
                     ) : (
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -238,14 +237,14 @@ export default function Home() {
 
               {/* Search results dropdown */}
               {showDropdown && searchResults.length > 0 && (
-                <div className="absolute z-[1001] mt-2 max-h-[50vh] w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-xl">
+                <div className="absolute z-[1001] mt-2 max-h-[50vh] w-full overflow-y-auto rounded-md border border-accent-200 bg-secondary shadow-xl">
                   {searchResults.map((place, index) => (
                     <div
                       key={index}
-                      className="flex cursor-pointer items-start border-b border-gray-200 p-3 hover:bg-red-50"
+                      className="flex cursor-pointer items-start border-b border-accent-200 p-3 hover:bg-accent-50"
                       onClick={() => handleSelectPlace(place)}
                     >
-                      <div className="mt-1 mr-3 text-red-500">
+                      <div className="mt-1 mr-3 text-primary">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="h-5 w-5"
@@ -260,19 +259,19 @@ export default function Home() {
                         </svg>
                       </div>
                       <div>
-                        <p className="font-medium text-gray-800">
+                        <p className="font-medium text-tertiary">
                           {place.display_name.split(",")[0]}
                         </p>
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 text-sm text-accent-600">
                           {place.display_name}
                         </p>
                         {place.category && (
                           <div className="flex items-center mt-1">
-                            <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
+                            <span className="text-xs bg-primary-100 text-primary px-2 py-0.5 rounded">
                               {place.category}
                             </span>
                             {place.rating && (
-                              <span className="ml-2 text-xs flex items-center text-amber-500">
+                              <span className="ml-2 text-xs flex items-center text-accent-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-0.5" viewBox="0 0 20 20" fill="currentColor">
                                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                 </svg>
@@ -287,13 +286,13 @@ export default function Home() {
                 </div>
               )}
 
-              <div className="mt-3 text-xs text-red-400">
+              <div className="mt-3 text-xs text-tertiary">
                 {
                   "Try searching for: Monas Jakarta, Pantai Kuta Bali, Malioboro Yogyakarta, Borobudur"
                 }
               </div>
             </div>
-            <p onClick={handleMapClick}  className="mt-4 text-sm sm:text-base text-red-500 font-medium underline cursor-pointer">
+            <p onClick={handleMapClick} className="mt-4 text-sm sm:text-base text-primary font-medium underline cursor-pointer">
               OR GO STRAIGHT TO OUR MAP
             </p>
           </div>
@@ -302,3 +301,4 @@ export default function Home() {
     </main>
   );
 }
+
