@@ -975,7 +975,7 @@ export default function LocationSearch() {
 
   // Render halaman utama hanya ketika data dan map siap
   return (
-    <div className="w-full h-[calc(100vh-5rem)] relative flex flex-col pt-">
+    <div className="w-full h-screen relative flex flex-col pt-">
       {/* Search Bar */}
       <div className="p-4 bg-white shadow-md z-10 mt-[5rem] rounded-lg mx-2">
         <div 
@@ -1070,7 +1070,7 @@ export default function LocationSearch() {
       </div>
       
       {/* Map Container */}
-      <div className="h-[41vh]">
+      <div className="h-[69vh]">
         <GoogleMap
           mapContainerStyle={{ width: "100%", height: "100%" }}
           center={mapCenter}
@@ -1153,7 +1153,7 @@ export default function LocationSearch() {
       </div>
       
       {/* Category Filter */}
-      <div className="mx-4 my-3 h-[8vh] overflow-x-auto">
+      <div className="mx-4 my-3 h-[10vh] overflow-x-auto">
         <div className="flex items-center gap-2 whitespace-nowrap">
           {categories.map((category) => (
             <div key={category.id} className="flex-shrink-0">
@@ -1230,7 +1230,7 @@ export default function LocationSearch() {
       </div>
 
       {/* Bottom Card - Location Info */}
-      <div className="flex-none h-[25vh]">
+      <div className="flex-none h-[22vh]">
         {showBottomCard && selectedVenue && (
           <div
             className="w-full overflow-y-auto rounded-t-3xl bg-gradient-to-r from-red-600 to-red-800 px-5 pt-5 pb-3 shadow-lg transition-all duration-300 ease-in-out"
